@@ -1,9 +1,6 @@
-from io import BytesIO
-
 import pytest
-from PIL import Image
+
 from django import forms
-from django.core.files.base import File
 from posts.models import Post
 
 
@@ -19,7 +16,7 @@ class TestNewView:
             response = user_client.get('/new/')
         assert response.status_code != 404, 'Страница `/new/` не найдена, проверьте этот адрес в *urls.py*'
         assert 'form' in response.context, 'Проверьте, что передали форму `form` в контекст страницы `/new/`'
-        assert len(response.context['form'].fields) == 3, 'Проверьте, что в форме `form` на страницу `/new/` 3 поля'
+        assert len(response.context['form'].fields) == 2, 'Проверьте, что в форме `form` на страницу `/new/` 2 поля'
         assert 'group' in response.context['form'].fields, \
             'Проверьте, что в форме `form` на странице `/new/` есть поле `group`'
         assert type(response.context['form'].fields['group']) == forms.models.ModelChoiceField, \
@@ -34,19 +31,6 @@ class TestNewView:
         assert response.context['form'].fields['text'].required, \
             'Проверьте, что в форме `form` на странице `/new/` поле `group` обязательно'
 
-        assert 'image' in response.context['form'].fields, \
-            'Проверьте, что в форме `form` на странице `/new/` есть поле `image`'
-        assert type(response.context['form'].fields['image']) == forms.fields.ImageField, \
-            'Проверьте, что в форме `form` на странице `/new/` поле `image` типа `ImageField`'
-
-    @staticmethod
-    def get_image_file(name, ext='png', size=(50, 50), color=(256, 0, 0)):
-        file_obj = BytesIO()
-        image = Image.new("RGBA", size=size, color=color)
-        image.save(file_obj, ext)
-        file_obj.seek(0)
-        return File(file_obj, name=name)
-
     @pytest.mark.django_db(transaction=True)
     def test_new_view_post(self, user_client, user, group):
         text = 'Проверка нового поста!'
@@ -56,8 +40,7 @@ class TestNewView:
             assert False, f'''Страница `/new` работает неправильно. Ошибка: `{e}`'''
         url = '/new/' if response.status_code in (301, 302) else '/new'
 
-        image = self.get_image_file('image.png')
-        response = user_client.post(url, data={'text': text, 'group': group.id, 'image': image})
+        response = user_client.post(url, data={'text': text, 'group': group.id})
 
         assert response.status_code in (301, 302), \
             'Проверьте, что со страницы `/new/` после создания поста перенаправляете на главную страницу'
@@ -66,8 +49,7 @@ class TestNewView:
         assert response.url == '/', 'Проверьте, что перенаправляете на главную страницу `/`'
 
         text = 'Проверка нового поста 2!'
-        image = self.get_image_file('image2.png')
-        response = user_client.post(url, data={'text': text, 'image': image})
+        response = user_client.post(url, data={'text': text})
         assert response.status_code in (301, 302), \
             'Проверьте, что со страницы `/new/` после создания поста перенаправляете на главную страницу'
         post = Post.objects.filter(author=user, text=text, group__isnull=True).first()
