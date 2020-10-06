@@ -1,9 +1,10 @@
-import pytest
 import re
+import tempfile
+
+import pytest
 from django.contrib.admin.sites import site
 from django.contrib.auth import get_user_model
 from django.db.models import fields
-from django.template.loader import get_template
 
 try:
     from posts.models import Post
@@ -64,6 +65,13 @@ class TestPost:
         assert group_field.null, \
             'Свойство `group` модели `Post` должно быть с атрибутом `null=True`'
 
+        image_field = search_field(model_fields, 'image')
+        assert image_field is not None, 'Добавьте свойство `image` в модель `Post`'
+        assert type(image_field) == fields.files.ImageField, \
+            'Свойство `image` модели `Post` должно быть `ImageField`'
+        assert image_field.upload_to == 'posts/', \
+            "Свойство `image` модели `Post` должно быть с атрибутом `upload_to='posts/'`"
+
     @pytest.mark.django_db(transaction=True)
     def test_post_create(self, user):
         text = 'Тестовый пост'
@@ -71,7 +79,8 @@ class TestPost:
 
         assert Post.objects.all().count() == 0
 
-        post = Post.objects.create(text=text, author=author)
+        image = tempfile.NamedTemporaryFile(suffix=".jpg").name
+        post = Post.objects.create(text=text, author=author, image=image)
         assert Post.objects.all().count() == 1
         assert Post.objects.get(text=text, author=author).pk == post.pk
 
@@ -162,30 +171,3 @@ class TestGroupView:
 
         if response.status_code != 200:
             assert False, 'Страница `/group/<slug>/` работает неправильно.'
-        group = post_with_group.group
-        html = response.content.decode()
-
-        html_template = get_template('group.html').template.source
-
-        assert search_refind(r'{%\s*for\s+.+in.*%}', html_template), \
-            'Отредактируйте HTML-шаблон, используйте тег цикла'
-        assert search_refind(r'{%\s*endfor\s*%}', html_template), \
-            'Отредактируйте HTML-шаблон, не найден тег закрытия цикла'
-
-        assert re.search(
-            r'<\s*title\s*>\s*Записи\s+сообщества\s+' + group.title + r'\s+\|\s+Yatube\s*<\s*\/title\s*>',
-            html
-        ), 'Отредактируйте HTML-шаблон, не найдено название страницы `<title>Записи сообщества {{ название_группы }} | Yatube</title>`'
-        assert re.search(
-            r'<\s*h1\s*>\s*' + group.title + r'\s*<\s*\/h1\s*>',
-            html
-        ), 'Отредактируйте HTML-шаблон, не найден заголовок группы `<h1>{{ название_группы }}</h1>`'
-        assert re.search(
-            r'<\s*p\s*>\s*' + group.description + r'\s*<\s*\/p\s*>',
-            html
-        ), 'Отредактируйте HTML-шаблон, не найдено описание группы `<p>{{ описание_группы }}</p>`'
-
-        assert re.search(
-            r'<\s*p(\s+class=".+"|\s*)>\s*' + post_with_group.text + r'\s*<\s*\/p\s*>',
-            html
-        ), 'Отредактируйте HTML-шаблон, не найден текст поста `<p>{{ текст_поста }}</p>`'
