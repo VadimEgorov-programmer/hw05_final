@@ -91,11 +91,9 @@ def post_edit(request, username, post_id):
         return redirect('post', username=username, post_id=post_id)
     # добавим в form свойство files
     form = PostForm(request.POST or None, files=request.FILES or None, instance=post)
-
-    if request.method == 'POST':
-        if form.is_valid():
-            form.save()
-            return redirect("post", username=request.user.username, post_id=post_id)
+    if form.is_valid():
+        form.save()
+        return redirect("post", username=request.user.username, post_id=post_id)
 
     return render(
         request, 'new_post.html', {'form': form, 'post': post},
@@ -124,14 +122,13 @@ def add_comment(request, username, post_id):
     comments = post.comment_post.all()
 
     form = CommentForm(request.POST or None)
-    if request.method == 'POST':
-        if form.is_valid():
-            new_comment = form.save(commit=False)
-            new_comment.author = request.user
-            new_comment.post = post
-            new_comment.save()
-            return redirect('post', username=username,
-                            post_id=post_id)
+    if form.is_valid():
+        new_comment = form.save(commit=False)
+        new_comment.author = request.user
+        new_comment.post = post
+        new_comment.save()
+        return redirect('post', username=username,
+                        post_id=post_id)
 
     return render(request, 'comments.html',
                   {'post': post,
