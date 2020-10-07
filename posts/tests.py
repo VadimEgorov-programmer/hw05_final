@@ -149,13 +149,13 @@ class TestImageRender(TestCase):
         )
 
     def test_direct_post_render_image(self):
-        response = self.client.get(
+        response = self.authorized_client.get(
             reverse('post', kwargs={'username': self.user.username,
                                     'post_id': self.post.pk}))
         self.assertContains(response, self.tag)
 
     def test_profile_post_image_render(self):
-        response = self.client.get(
+        response = self.authorized_client.get(
             reverse('profile', kwargs={'username': self.user.username}))
         self.assertContains(response, self.tag)
 
@@ -167,7 +167,7 @@ class TestImageRender(TestCase):
         self.post.group_id = self.group.pk
         self.post.save()
 
-        response = self.client.get(
+        response = self.authorized_client.get(
             reverse('group_post', kwargs={'slug': self.group.slug}))
         self.assertContains(response, self.tag)
 
