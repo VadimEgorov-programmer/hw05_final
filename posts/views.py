@@ -73,11 +73,13 @@ def post_view(request, username, post_id):
     # и определённый автор, то выдаём ошибку 404"""
     my_post = Post.objects.filter(author=user).count()  # Считаем количество постов определённого пользователя
     comments = post.comment_post.all()
+    form = CommentForm()
     return render(request, 'post.html', {
         'post': post,
         "profile": user,
         'my_post': my_post,
         "comments": comments,
+        'form': form,
     })
 
 
