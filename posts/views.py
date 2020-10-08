@@ -71,17 +71,17 @@ def profile(request, username):
 
 
 def post_view(request, username, post_id):
-    user = get_object_or_404(User, username=username)  # Если отстутсвует такое имя пользователя, то выдаем ошибку 404
-    post = get_object_or_404(Post, id=post_id, author=user)
+    user = get_object_or_404(User, username=username)
+    post = get_object_or_404(Post, id=post_id, author=user)  # Не понял как реализовать
     # Если отсутствует определённый пост
     # и определённый автор, то выдаём ошибку 404"""
-    my_post = Post.objects.filter(author=user).count()  # Считаем количество постов определённого пользователя
+    count = post.author.posts.count()
     comments = post.comments.all()
     form = CommentForm()
     return render(request, 'post.html', {
         'post': post,
         "profile": user,
-        'my_post': my_post,
+        'my_post': count,
         "comments": comments,
         'form': form,
     })
