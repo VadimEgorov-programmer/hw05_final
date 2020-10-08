@@ -29,7 +29,7 @@
                         </li>
                             {% if request.user != profile %}
                         <li class="list-group-item">
-                            {% if request.user is following %}
+                            {% if following %}
                             <a class="btn btn-lg btn-light"
                                href="{% url 'profile_unfollow' profile.username %}" role="button">
                                Отписаться

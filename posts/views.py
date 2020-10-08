@@ -57,12 +57,15 @@ def profile(request, username):
     paginator = Paginator(post_list, 10)  # Показываем 10 записей на странице
     page_number = request.GET.get('page')  # Переменная в URL с номером запрошенной страницы
     page = paginator.get_page(page_number)  # Получаем записи с нужным смещением страниц
+    following = Follow.objects.filter(user=request.user,
+                                             author=user)
     return render(request, 'profile.html', {
         'profile': user,
         'my_post': my_post,
         'page': page,
         'paginator': paginator,
         'post_list': post_list,
+        'following': following,
     })
 
 
