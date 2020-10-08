@@ -75,7 +75,7 @@ def post_view(request, username, post_id):
     # Если отсутствует определённый пост
     # и определённый автор, то выдаём ошибку 404"""
     my_post = Post.objects.filter(author=user).count()  # Считаем количество постов определённого пользователя
-    comments = post.comment_post.all()
+    comments = post.comments.all()
     form = CommentForm()
     return render(request, 'post.html', {
         'post': post,
@@ -122,7 +122,7 @@ def server_error(request):
 def add_comment(request, username, post_id):
     post = get_object_or_404(Post, pk=post_id)
     author = get_object_or_404(User, username=username)
-    comments = post.comment_post.all()
+    comments = post.comments.all()
 
     form = CommentForm(request.POST or None)
     if form.is_valid():
