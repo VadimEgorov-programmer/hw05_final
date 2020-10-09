@@ -120,7 +120,6 @@ def server_error(request):
 def add_comment(request, username, post_id):
     post = get_object_or_404(Post, id=post_id, author__username=username)
     comments = post.comments.all()
-
     form = CommentForm(request.POST or None)
     if form.is_valid():
         new_comment = form.save(commit=False)
