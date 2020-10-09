@@ -72,21 +72,13 @@ def profile(request, username):
 
 
 def post_view(request, username, post_id):
-    user = get_object_or_404(User, username=username)
-    post = get_object_or_404(Post, id=post_id, author=user)  # Не понял как реализовать
-    #post = Post.objects.filter(author__username=request.user.username)
-    #post = get_object_or_404(post_)
-    #post = None
-    #for post in posts:
-        #post = get_object_or_404(Post, id=post_id, author=user)
-    # Если отсутствует определённый пост
-    # и определённый автор, то выдаём ошибку 404"""
+    post = get_object_or_404(Post, id=post_id, author__username=username)
     count = post.author.posts.count()
     comments = post.comments.all()
     form = CommentForm()
     return render(request, 'post.html', {
         'post': post,
-        "profile": user,
+        "profile": post.author,
         'my_post': count,
         "comments": comments,
         'form': form,
@@ -170,5 +162,6 @@ def profile_unfollow(request, username):
     author = get_object_or_404(User, username=username)
     follow_to_delete = Follow.objects.filter(user=request.user,
                                              author=author)
-    follow_to_delete.delete()
+    if follow_to_delete != None:
+        follow_to_delete.delete()
     return redirect('profile', username=username)
