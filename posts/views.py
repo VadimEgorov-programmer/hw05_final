@@ -118,8 +118,7 @@ def server_error(request):
 
 @login_required
 def add_comment(request, username, post_id):
-    post = get_object_or_404(Post, pk=post_id)
-    author = get_object_or_404(User, username=username)
+    post = get_object_or_404(Post, id=post_id, author__username=username)
     comments = post.comments.all()
 
     form = CommentForm(request.POST or None)
@@ -133,7 +132,7 @@ def add_comment(request, username, post_id):
 
     return render(request, 'comments.html',
                   {'post': post,
-                   'author': author,
+                   'author': post.author,
                    'form': form,
                    'comments': comments}, )
 
