@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.db.models import Count
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from posts.forms import PostForm, CommentForm
@@ -73,6 +74,11 @@ def profile(request, username):
 def post_view(request, username, post_id):
     user = get_object_or_404(User, username=username)
     post = get_object_or_404(Post, id=post_id, author=user)  # Не понял как реализовать
+    #post = Post.objects.filter(author__username=request.user.username)
+    #post = get_object_or_404(post_)
+    #post = None
+    #for post in posts:
+        #post = get_object_or_404(Post, id=post_id, author=user)
     # Если отсутствует определённый пост
     # и определённый автор, то выдаём ошибку 404"""
     count = post.author.posts.count()
@@ -143,9 +149,7 @@ def add_comment(request, username, post_id):
 
 @login_required
 def follow_index(request):
-    user = request.user
-    followed_authors = user.follower.all().values('author')
-    post_list = Post.objects.filter(author__in=followed_authors)
+    post_list = Post.objects.filter(author__following__user=request.user).all()
     paginator = Paginator(post_list, 10)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
