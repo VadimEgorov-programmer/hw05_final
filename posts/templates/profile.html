@@ -1,65 +1,42 @@
 {% extends "base.html" %}
 {% block content %}
-    <main role="main" class="container">
+
+<main role="main" class="container">
         <div class="row">
-            <div class="col-md-3 mb-3 mt-1">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="h2">
-                            <!-- Имя автора -->
-                            {{ profile.first_name }} {{ profile.last_name }}
-                        </div>
-                        <div class="h3 text-muted">
-                            <!-- username автора -->
-                            @{{ profile.username }}
-                        </div>
-                    </div>
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item">
-                            <div class="h6 text-muted">
-                                Подписчиков: {{ profile.follower.count }} <br/>
-                                Подписан: {{ profile.following.count }}
-                            </div>
-                        </li>
-                        <li class="list-group-item">
-                            <div class="h6 text-muted">
-                                <!-- Количество записей -->
-                                Записей: {{ my_post }}
-                            </div>
-                        </li>
-                            {% if request.user != profile %}
-                        <li class="list-group-item">
-                            {% if following %}
-                            <a class="btn btn-lg btn-light"
-                               href="{% url 'profile_unfollow' profile.username %}" role="button">
-                               Отписаться
-                            </a>
-                            {% else %}
-                            <a class="btn btn-lg btn-primary"
-                               href="{% url 'profile_follow' profile.username %}" role="button">
-                            Подписаться
-                            </a>
-                            {% endif %}
-                        </li>
-                        {% endif %}
-                    </ul>
-                </div>
-            </div>
+            {% include "includes/author_info.html" with profile=profile%}
+        {% if request.user != profile %}
+        <li class="list-group-item">
+            {% if following %}
+            <a class="btn btn-lg btn-light"
+               href="{% url 'profile_unfollow' profile.username %}" role="button">
+                Отписаться
+            </a>
+            {% else %}
+            <a class="btn btn-lg btn-primary"
+               href="{% url 'profile_follow' profile.username %}" role="button">
+                Подписаться
+            </a>
+            {% endif %}
+        </li>
+        {% endif %}
+        </ul>
+    </div>
+    </div>
 
-            <div class="col-md-9">
+    <div class="col-md-9">
 
 
-                {% for post in page %}
-                    {% include "includes/post_item.html" with post=post %}
-                {% endfor %}
+        {% for post in page %}
+        {% include "includes/post_item.html" with post=post %}
+        {% endfor %}
 
-                <!-- Остальные посты -->
+        <!-- Остальные посты -->
 
-                <!-- Здесь постраничная навигация паджинатора -->
-                {% if page.has_other_pages %}
-                    {% include "includes/paginator.html" with items=page paginator=paginator %}
-                {% endif %}
-            </div>
-        </div>
-    </main>
+        <!-- Здесь постраничная навигация паджинатора -->
+        {% if page.has_other_pages %}
+        {% include "includes/paginator.html" with items=page paginator=paginator %}
+        {% endif %}
+    </div>
+    </div>
+</main>
 {% endblock %}
