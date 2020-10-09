@@ -41,6 +41,7 @@ def group_posts(request, slug):
 
 @login_required
 def new_post(request):
+    new_post_bool = True
     user = request.user
     form = PostForm(request.POST or None, files=request.FILES or None)
     if form.is_valid():
@@ -48,7 +49,8 @@ def new_post(request):
         post.author = request.user
         post.save()
         return redirect('index')
-    return render(request, 'new_post.html', {'form': form})
+    return render(request, 'new_post.html', {'form': form,
+                                             'the_determinant_of_the_editing_or_creation': new_post_bool})
 
 
 def profile(request, username):
