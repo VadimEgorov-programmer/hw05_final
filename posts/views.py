@@ -129,7 +129,7 @@ def add_comment(request, username, post_id):
         return redirect('post', username=username,
                         post_id=post_id)
 
-    return render(request, 'comments.html',
+    return render(request, 'includes/comments.html',
                   {'post': post,
                    'author': post.author,
                    'form': form,
