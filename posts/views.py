@@ -56,7 +56,7 @@ def new_post(request):
 def profile(request, username):
     user = get_object_or_404(User, username=username)
     post_list = Post.objects.filter(author=user).all()
-    my_post = Post.objects.filter(author=user).count()
+    Number_of_records = Post.objects.filter(author=user).count()
     paginator = Paginator(post_list, 10)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
@@ -65,7 +65,7 @@ def profile(request, username):
         following = Follow.objects.filter(user=request.user, author=user)
     return render(request, 'profile.html', {
         'profile': user,
-        'my_post': my_post,
+        'my_post': Number_of_records,
         'page': page,
         'paginator': paginator,
         'post_list': post_list,
