@@ -39,7 +39,6 @@ class Comment(models.Model):
                              related_name="comments")
     author = models.ForeignKey(User, on_delete=models.CASCADE,
                                related_name="comments_author")
-    # Меня напрягают одинаковые названия, так нельзя оставить? Я comment на comments заменил для автора
     text = models.TextField()
     created = models.DateTimeField("date published", auto_now_add=True)
 
@@ -47,12 +46,12 @@ class Comment(models.Model):
 class Follow(models.Model):
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=["user", "author", ],
-                                    name="unique user-author")]
-
-    # Нашел на стаке как сделать UniqueConstraint.
+            models.UniqueConstraint(
+                fields=["user", "author", ],
+                name="unique user-author"
+            )
+        ]
+        #  Класс) Так даже круче =)
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="follower")
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="following")
-
-    # Ковычки исправил)
