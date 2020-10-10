@@ -60,7 +60,7 @@ def profile(request, username):
     page = paginator.get_page(page_number)
     following = None
     if not request.user.is_anonymous or request.user.is_authenticated:
-        following = Follow.objects.filter(user=request.user, author=user)
+        following = Follow.objects.filter(user=request.user, author=user).exists()
     return render(request, 'profile.html', {
         'profile': user,
         'Number_of_records': Number_of_records,
