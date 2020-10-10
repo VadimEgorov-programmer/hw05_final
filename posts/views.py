@@ -97,7 +97,7 @@ def post_edit(request, username, post_id):
         return redirect("post", username=request.user.username, post_id=post_id)
 
     return render(
-        request, 'new_post.html', {'form': form, 'post': post, 'the_determinant_of_the_editing_or_creation': True},
+        request, 'new_post.html', {'form': form, 'post': post, 'is_edit': True},
     )
 
 
