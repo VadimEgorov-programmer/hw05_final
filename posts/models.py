@@ -21,10 +21,8 @@ class Post(models.Model):
     text = models.TextField()
     pub_date = models.DateTimeField("date published",
                                     auto_now_add=True)
-    author = models.ForeignKey(User, on_delete=models.CASCADE,
+    author = models.ForeignKey(User, on_delete=models.SET_NULL,
                                related_name="posts")
-    # Пусть удаляются группы с постами, я знаю что CASCADE можно заменить к примеру на SET_NULL ))))
-    # related_name добавил =)
     group = models.ForeignKey(Group, on_delete=models.CASCADE,
                               blank=True, null=True, related_name="post_group")
     image = models.ImageField(upload_to="posts/", blank=True, null=True)
