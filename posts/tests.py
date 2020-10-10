@@ -38,18 +38,15 @@ class TestPosts(TestCase):
 
     def test_auth_user_post_creation(self):
         # Go to your profile and check the redirect
-        # Зайдите в свой профиль и проверьте редирект
         response = self.authorized_client.post(reverse('new_post'), {'text': self.text})
         self.assertEqual(response.status_code, 302)
 
         # Verification of the similarity of the text
-        # Проверка сходства текста
         post = Post.objects.first()
         self.assertEqual(post.text, self.text)
 
     def test_anon_post_creation_redirect(self):
         # An unauthorized user and the post creation page
-        # Неавторизованный пользователь и страница создания поста
         response = self.unauthorized_client.get(reverse('new_post'))
         self.assertRedirects(response=response,
                              expected_url='/auth/login/?next=/new/',
@@ -57,7 +54,6 @@ class TestPosts(TestCase):
 
     def test_anon_post_creation_post_request(self):
         # Can a user create a POST via a POST request
-        # Может ли пользователь создать сообщение с помощью запроса POST
         self.unauthorized_client.post(reverse('new_post'), {'text': self.text})
         post_count = Post.objects.filter(text=self.text).count()
         self.assertEqual(post_count, 0)
