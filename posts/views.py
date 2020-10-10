@@ -58,8 +58,8 @@ def profile(request, username):
     paginator = Paginator(post_list, 10)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
-    following = None  # Без этого тесты практикума дают ошибку, написано: локальная переменная 'following'(
-    if not request.user.is_anonymous:
+    following = None
+    if not request.user.is_anonymous and request.user.is_authenticated:
         following = Follow.objects.filter(user=request.user, author=user)
     return render(request, 'profile.html', {
         'profile': user,
