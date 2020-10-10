@@ -24,7 +24,7 @@ class Post(models.Model):
     author = models.ForeignKey(User, on_delete=models.SET_NULL,
                                related_name="posts")
     group = models.ForeignKey(Group, on_delete=models.CASCADE,
-                              blank=True, null=True, related_name="post_group")
+                              blank=True, null=True, related_name="posts_group")
     image = models.ImageField(upload_to="posts/", blank=True, null=True)
 
     def __str__(self):
