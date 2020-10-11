@@ -303,5 +303,7 @@ class TestCommentSystem(TestCase):
         self.assertFalse(
             Comment.objects.filter(post=self.post, text='Test checking how the comment works').exists(),
             'Comment object was created')
-        self.assertRedirects(response, f'/auth/login/?next=/testuser/{self.post.id}/comment/',
+        go_to_post = self.authorized_client.post(reverse('/auth/login/?next=/testuser/{self.post.id}/comment/'))
+        self.assertRedirects(response, go_to_post,
                              msg_prefix='anonymous user is not redirected to login page')
+        self.assertEqual(Comment.post.Comment, 0)
