@@ -286,10 +286,11 @@ class TestCommentSystem(TestCase):
         response = self.authorized_client.post(f'/username/{self.post.id}/comment/',
                                                {'text': 'Test checking how the comment works'})
         self.assertTrue(
-            Comment.objects.filter(post=self.post, author=self.follower,
+            Comment.objects.filter(post=self.post, author=self.authorized_client,
                                    text='Test checking how the comment works').exists(),
             'Comment object was not created')
-        self.assertRedirects(response, f'/username/{self.post.id}/',
+        go_to_post = self.authorized_client.post(reverse('/username/{self.post.id}/'))
+        self.assertRedirects(response, go_to_post,
                              msg_prefix='user is not redirected to post page after commenting')
         response = self.authorized_client.get(f'/username/{self.post.id}/')
         self.assertEqual(response.context['comments'][0].text, 'Test checking how the comment works',
