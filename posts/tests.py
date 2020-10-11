@@ -95,7 +95,7 @@ class TestPosts(TestCase):
                 else:
                     self.assertEquals(post, response.context['post'])
 
-    def test_change_the_group(self):  # ~3 часа потратил, ничего другого не могу придумать, не карайте =)
+    def test_one_post_edit(self):
         # Creating a post
         text = 'text_test'
         post = Post.objects.create(
@@ -122,6 +122,7 @@ class TestPosts(TestCase):
         # Looking at group changes
         post_edited = Post.objects.last()
         post_count = Post.objects.all().count()
+        self.assertEqual(post, post_edited)
         self.assertEqual(post_edited.text, text_edited)
         self.assertEqual(post_edited.group, leo)
         self.assertEqual(post_count, 1)
