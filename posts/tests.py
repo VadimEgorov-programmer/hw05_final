@@ -210,20 +210,15 @@ class PageCacheTest(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username="testuser", password=12345)
         self.authorized_client = Client()
-        self.unauthorized_client = Client()
         self.authorized_client.force_login(self.user)
-        self.text = 'test_text'
 
     def test_index_cache(self):
+        text = 'test_text'
         # Creating the page cache and checking that the new post has not yet appeared
         self.authorized_client.get(reverse('index'))
-        self.authorized_client.post(reverse('new_post'), {'text': self.text})
+        self.authorized_client.post(reverse('new_post'), {'text': text})
         response = self.client.get(reverse('index'))
-        self.assertNotContains(response, self.text)
-        self.assertNotContains(
-            response,
-            'test_text',
-            msg_prefix="The home page is not cached")
+        self.assertNotContains(response, text)
         cache.clear()
         response = self.client.get(reverse('index'))
         self.assertContains(
