@@ -262,7 +262,7 @@ class TestFollowerSystem(TestCase):
                          "Follow object was not deleted")
 
         # test that author's posts do not appear on /follow/ for non-followers
-        response = self.authorized_client.get('/follow/')
+        response = self.authorized_client.get(reverse('/follow/'))
         self.assertNotIn(
             self.post, response.context['page'],
             "author not followed, but their post appears on /follow/")
