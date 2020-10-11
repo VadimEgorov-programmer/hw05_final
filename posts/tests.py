@@ -57,31 +57,43 @@ class TestPosts(TestCase):
                              target_status_code=200)
 
     def test_anon_post_creation_post_request(self):
-        self.unauthorized_client.post(reverse('new_post'), {'text': self.text})
-        post_count = Post.objects.filter(text=self.text).count()
+        text = 'test_text'
+        self.unauthorized_client.post(reverse('new_post'), {'text': text})
+        post_count = Post.objects.count()
         self.assertEqual(post_count, 0)
 
     def test_edit_post_authenticated(self):
-        self.post = Post.objects.create(text=self.text, author=self.user)
-        response = self.authorized_client.get(f'/username/{self.post.id}/edit/')
-        self.assertEqual(response.status_code, 200, 'Let s check access to the editing page for an authorized user')
-        first_text = self.post.text
+        text = 'test_text'
+        post = Post.objects.create(text=text, author=self.user)
+        first_text = post.text
         new_text = "Checking text in the database"
-        self.authorized_client.post(f'/username/{self.post.id}/edit/', {'text': new_text})
-        self.post.refresh_from_db()
-        self.assertEqual(first_text, new_text)
+        self.authorized_client.post(f'/username/{post.id}/edit/', {'text': new_text})
+        post = Post.objects.first()
+        self.assertEqual(first_text, post.new_text)
+
+    def urls_test_profile_index_direct_post_view(self):
+        """
+        RLs for testing pages,
+        User profile test,
+        Home page test ('index'),
+        The direct test page with posts,
+        """
+        text = 'test_text'
+        post = Post.objects.create(text=text, author=self.user)
         urls = [
             reverse('index'),
             reverse('profile', kwargs={'username': self.user.username}),
-            reverse('post', kwargs={'username': 'username', 'post_id': self.post.pk})]
+            reverse('post', kwargs={'username': 'username', 'post_id': post.pk})]
         for url in urls:
             response = self.authorized_client.get(url)
-            self.assertContains(response,
-                                escape(first_text),
-                                msg_prefix=f'Nothing was updated in {url}')
-            self.assertNotContains(response,
-                                   escape(first_text),
-                                   msg_prefix=f'The old post still remains in {url}')
+            self.assertContains(response, text)
+            self.assertContains(response, self.user.username)
+            with self.subTest('Post is not on "' + url + '"'):
+                if 'paginator' in response.context:
+                    self.assertIn(
+                        post, response.context['paginator'].object_list)
+                else:
+                    self.assertEquals(post, response.context['post'])
 
     def test_change_the_group(self):  # ~3 часа потратил, ничего другого не могу придумать, не карайте =)
         # Creating a post
