@@ -307,3 +307,5 @@ class TestCommentSystem(TestCase):
         self.assertRedirects(response, go_to_post,
                              msg_prefix='anonymous user is not redirected to login page')
         self.assertEqual(Comment.post.Comment, 0)
+
+#  Надеюсь что уже скоро закончу с тестами =)
