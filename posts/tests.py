@@ -57,7 +57,6 @@ class TestPosts(TestCase):
                              target_status_code=200)
 
     def test_anon_post_creation_post_request(self):
-        # Can a user create a POST via a POST request
         self.unauthorized_client.post(reverse('new_post'), {'text': self.text})
         post_count = Post.objects.filter(text=self.text).count()
         self.assertEqual(post_count, 0)
@@ -66,14 +65,11 @@ class TestPosts(TestCase):
         self.post = Post.objects.create(text=self.text, author=self.user)
         response = self.authorized_client.get(f'/username/{self.post.id}/edit/')
         self.assertEqual(response.status_code, 200, 'Let s check access to the editing page for an authorized user')
-        # Edit the post and check for changes in the database
         first_text = self.post.text
         new_text = "Checking text in the database"
         self.authorized_client.post(f'/username/{self.post.id}/edit/', {'text': new_text})
-        # Updating the post in the database
         self.post.refresh_from_db()
         self.assertEqual(first_text, new_text)
-        # Let s see if the data on the pages has changed
         urls = [
             reverse('index'),
             reverse('profile', kwargs={'username': self.user.username}),
@@ -83,7 +79,6 @@ class TestPosts(TestCase):
             self.assertContains(response,
                                 escape(first_text),
                                 msg_prefix=f'Nothing was updated in {url}')
-            # Let's check that the entry was edited and there is no new one
             self.assertNotContains(response,
                                    escape(first_text),
                                    msg_prefix=f'The old post still remains in {url}')
