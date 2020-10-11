@@ -37,16 +37,20 @@ class TestPosts(TestCase):
         self.image.close()
 
     def test_auth_user_post_creation(self):
-        # Go to your profile and check the redirect
-        response = self.authorized_client.post(reverse('new_post'), {'text': self.text})
+        # Go to your profile and check the redirect + create a group and post
+        text = 'test_text'
+        group = Group.objects.create(
+            title='test_title', slug='test_slug', description='test_description')
+        response = self.authorized_client.post(reverse('new_post'), {'text': text, 'group': group})
         self.assertEqual(response.status_code, 302)
 
-        # Verification of the similarity of the text
+        # Checking the similarity of the text, author, and group
         post = Post.objects.first()
-        self.assertEqual(post.text, self.text)
+        self.assertEqual(post.text, text)
+        self.assertEqual(post.group, group)
+        self.assertEqual(post.author.username, self.user.username)
 
     def test_anon_post_creation_redirect(self):
-        # An unauthorized user and the post creation page
         response = self.unauthorized_client.get(reverse('new_post'))
         self.assertRedirects(response=response,
                              expected_url='/auth/login/?next=/new/',
