@@ -239,9 +239,9 @@ class TestFollowerSystem(TestCase):
             username='Test_profile_for_the_subscription',
             password=12345)
         self.client.force_login(self.user)
-        self.text = 'test_text'
+        text = 'test_text'
         self.post = Post.objects.create(
-            text=self.text, author=self.user_to_follow)
+            text=text, author=self.user_to_follow)
 
     def test_following(self):
         response = self.authorized_client.get(reverse('/Test_profile_for_the_subscription/follow'))
@@ -276,9 +276,9 @@ class TestCommentSystem(TestCase):
         self.authorized_client = Client()
         self.unauthorized_client = Client()
         self.authorized_client.force_login(self.user)
-        self.text = 'test_text'
+        text = 'test_text'
         self.post = Post.objects.create(
-            text=self.text, author=self.user)
+            text=text, author=self.user)
         self.comment_text = 'test_comment'
 
     def test_comments_authenticated(self):
