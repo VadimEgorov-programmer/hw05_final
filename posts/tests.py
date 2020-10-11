@@ -246,7 +246,7 @@ class TestFollowerSystem(TestCase):
     def test_following(self):
         response = self.authorized_client.get(reverse('/Test_profile_for_the_subscription/follow'))
         self.assertTrue(
-            Follow.objects.filter(user=self.follower, author=self.user).exists(),
+            Follow.objects.filter(user=self.authorized_client, author=self.user).exists(),
             "Follow object was not created")
 
     def test_the_user_is_subscribed_to_the_post_is_displayed(self):
@@ -258,7 +258,7 @@ class TestFollowerSystem(TestCase):
     def test_unfollowing(self):
         self.authorized_client.get(reverse('/Test_profile_for_the_subscription/follow'))
         response = self.authorized_client.get(reverse('/Test_profile_for_the_subscription/unfollow'))
-        self.assertFalse(Follow.objects.filter(user=self.follower, author=self.user).exists(),
+        self.assertFalse(Follow.objects.filter(user=self.authorized_client, author=self.user).exists(),
                          "Follow object was not deleted")
 
         # test that author's posts do not appear on /follow/ for non-followers
