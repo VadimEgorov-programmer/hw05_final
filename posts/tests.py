@@ -29,7 +29,6 @@ class TestPosts(TestCase):
         self.authorized_client = Client()
         self.unauthorized_client = Client()
         self.authorized_client.force_login(self.user)
-        self.text = 'test_text'
         self.image = self._create_image()
         self.file = self._create_file()
 
@@ -157,6 +156,7 @@ class TestPosts(TestCase):
         """
         Test for changing a post on all pages.
             """
+        text = 'test_text'
         group = Group.objects.create(
             title='test_group',
             slug='test_group',
@@ -164,12 +164,12 @@ class TestPosts(TestCase):
         text_edited = 'test_text_edit'
         self.authorized_client.post(
             reverse('new_post'),
-            data={'text': self.text, 'group': group.id},
+            data={'text': text, 'group': group.id},
             follow=True
         )
         for url in (self.urls()):
             with self.subTest(url=url):
-                self.check_post_content(url, self.user, group, self.text, text_edited)
+                self.check_post_content(url, self.user, group, text, text_edited)
 
         # Проверки для работы заданий Спринта 6
 
