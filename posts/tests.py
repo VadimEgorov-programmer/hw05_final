@@ -243,32 +243,21 @@ class TestFollowerSystem(TestCase):
         self.post = Post.objects.create(
             text=self.text, author=self.user_to_follow)
 
-    def test_follow(self):
-        """ test following, unfollowing and accessing followed authors' posts """
-        # test following
-        response = self.authorized_client.get('/Test_profile_for_the_subscription/')
-        self.assertContains(response, 'href="/Test_profile_for_the_subscription/follow"',
-                            msg_prefix='"Follow" button not found on profile page')
-        self.assertNotContains(response, 'href="/Test_profile_for_the_subscription/unfollow"',
-                               msg_prefix='"Unfollow" button found on profile page')
-        response = self.authorized_client.get('/Test_profile_for_the_subscription/follow')
+    def test_following(self):
+        response = self.authorized_client.get(reverse('/Test_profile_for_the_subscription/follow'))
         self.assertTrue(
             Follow.objects.filter(user=self.follower, author=self.user).exists(),
             "Follow object was not created")
 
-        # test that follower can see followed author's post
+    def test_the_user_is_subscribed_to_the_post_is_displayed(self):
         response = self.authorized_client.get('/follow/')
         self.assertIn(
             self.post, response.context['page'],
             "follower can not see their subscriptions on /follow/ page")
 
-        # test unfollowing
-        response = self.authorized_client.get('/Test_profile_for_the_subscription/')
-        self.assertNotContains(response, 'href="/Test_profile_for_the_subscription/follow"',
-                               msg_prefix='"Follow" button found on profile page')
-        self.assertContains(response, 'href="/Test_profile_for_the_subscription/unfollow"',
-                            msg_prefix='"Unfollow" button not found on profile page')
-        response = self.authorized_client.get('/Test_profile_for_the_subscription/unfollow')
+    def test_unfollowing(self):
+        self.authorized_client.get(reverse('/Test_profile_for_the_subscription/follow'))
+        response = self.authorized_client.get(reverse('/Test_profile_for_the_subscription/unfollow'))
         self.assertFalse(Follow.objects.filter(user=self.follower, author=self.user).exists(),
                          "Follow object was not deleted")
 
