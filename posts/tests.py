@@ -127,7 +127,52 @@ class TestPosts(TestCase):
         self.assertEqual(post_edited.group, leo)
         self.assertEqual(post_count, 1)
 
-    # Проверки для работы заданий Спринта 6
+    def urls(self):
+        """
+        Collects url of pages for testing
+        """
+        urls = [
+            reverse('index'),
+            reverse('profile', kwargs={'username': self.user.username}),
+            reverse('post_view', kwargs={'username': self.user.username, 'post_id': 1})]
+        return urls
+
+    def check_post_content(self, url, user, group, text, new_text):
+        """
+        Content of the post is checked
+        """
+        text = 'test_text'
+        text_edited = 'test_text_edit'
+        group = Group.objects.create(
+            title='test_group',
+            slug='test_group',
+            description='test_text')
+        response = self.authorized_client.get(url)
+        self.assertEqual(response.context[user], self.user)
+        self.assertEqual(response.context[group], group)
+        self.assertEqual(response.context[text], text)
+        self.assertEqual(response.context[new_text], text_edited)
+
+    def check_post_on_pages(self):
+        """
+        Test for changing a post on all pages.
+            """
+        group = Group.objects.create(
+            title='test_group',
+            slug='test_group',
+            description='test_text')
+        text_edited = 'test_text_edit'
+        self.authorized_client.post(
+            reverse('new_post'),
+            data={'text': self.text, 'group': group.id},
+            follow=True
+        )
+        for url in (self.urls()):
+            with self.subTest(url=url):
+                self.check_post_content(url, self.user, group, self.text, text_edited)
+
+        # Проверки для работы заданий Спринта 6
+
     def test_image_upload(self):
         # Adding an image to the test post
         response = self.authorized_client.post(f'/username/{self.post.id}/edit/',
@@ -144,7 +189,7 @@ class TestPosts(TestCase):
                                 msg_prefix=f'Image display error in {url}')
 
     def test_protection_against_incorrect_image_shape(self):
-        non_image_path = 'posts/tests.py'
+        non_image_path = self.image
         error_message = f'Ошибка. Вы загрузили не изображение,' \
             f'или оно битое'
         with open(non_image_path, 'rb') as file_handler:
