@@ -53,9 +53,8 @@ def new_post(request):
 
 def profile(request, username):
     user = get_object_or_404(User, username=username)
-    post_list = user.posts.filter(author=user).all()
-    number_of_records = post_list.count()
-    paginator = Paginator(post_list, 10)
+    number_of_records = user.posts.all().count()
+    paginator = Paginator(user.posts.all(), 10)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
     following = None
@@ -66,7 +65,7 @@ def profile(request, username):
         'Number_of_records': number_of_records,
         'page': page,
         'paginator': paginator,
-        'post_list': post_list,
+        'post_list': user.posts.all(),
         'following': following,
     })
 
