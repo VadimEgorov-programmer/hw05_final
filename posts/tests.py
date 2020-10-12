@@ -35,160 +35,63 @@ class TestPosts(TestCase):
     def tearDown(self):
         self.image.close()
 
+    def test_profile(self):
+        """ After registration, a user's personal page (profile) is created) """
+        response = self.authorized_client.get(reverse('/username/'))
+        self.assertEqual(response.status_code, 200)
+        self.assertIsInstance(response.context['profile'], self.user.username)
+        self.assertEqual(response.context['profile'].username, self.user.username)
+
     def test_auth_user_post_creation(self):
-        # Go to your profile and check the redirect + create a group and post
+        """ An authorized user can post a message (new) """
         text = 'test_text'
         group = Group.objects.create(
             title='test_title', slug='test_slug', description='test_description')
         response = self.authorized_client.post(reverse('new_post'), {'text': text, 'group': group})
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
 
-        # Checking the similarity of the text, author, and group
+        # Additionally check the post in the database
         post = Post.objects.first()
+        post_count = Post.objects.count()
         self.assertEqual(post.text, text)
         self.assertEqual(post.group, group)
         self.assertEqual(post.author.username, self.user.username)
+        self.assertEqual(post_count, 0)
 
-    def test_anon_post_creation_redirect(self):
+    def test_for_an_unauthorized_redirect(self):
+        """ An unauthorized visitor will not be able to publish a post (it redirects to the login page) """
         response = self.unauthorized_client.get(reverse('new_post'))
         self.assertRedirects(response=response,
                              expected_url='/auth/login/?next=/new/',
                              target_status_code=200)
 
     def test_anon_post_creation_post_request(self):
+        """ Attempt to create a post without registration """
         text = 'test_text'
         self.unauthorized_client.post(reverse('new_post'), {'text': text})
         post_count = Post.objects.count()
         self.assertEqual(post_count, 0)
 
-    def test_edit_post_authenticated(self):
-        text = 'test_text'
-        post = Post.objects.create(text=text, author=self.user)
-        first_text = post.text
-        new_text = "Checking text in the database"
-        self.authorized_client.post(f'/username/{post.id}/edit/', {'text': new_text})
-        post = Post.objects.first()
-        self.assertEqual(first_text, post.new_text)
-
-    def urls_test_profile_index_direct_post_view(self):
-        """
-        RLs for testing pages,
-        User profile test,
-        Home page test ('index'),
-        The direct test page with posts,
-        """
-        text = 'test_text'
-        post = Post.objects.create(text=text, author=self.user)
-        urls = [
-            reverse('index'),
-            reverse('profile', kwargs={'username': self.user.username}),
-            reverse('post', kwargs={'username': 'username', 'post_id': post.pk})]
-        for url in urls:
-            response = self.authorized_client.get(url)
-            self.assertContains(response, text)
-            self.assertContains(response, self.user.username)
-            with self.subTest('Post is not on "' + url + '"'):
-                if 'paginator' in response.context:
-                    self.assertIn(
-                        post, response.context['paginator'].object_list)
-                else:
-                    self.assertEquals(post, response.context['post'])
-
-    def test_one_post_edit(self):
-        # Creating a post
-        text = 'text_test'
-        post = Post.objects.create(
-            text=text,
-            author=self.user)
-        text_edited = 'test_text_edit'
-        # Main post group
-        leo = Group.objects.create(
-            title='lev_title_text',
-            slug='leo_slug_text',
-            description='New text_text')
-        # We give the first group
-        data = {
-            'text': text_edited,
-            'group': leo.id,
-        }
-        self.authorized_client.post(
-            reverse(
-                'post_edit',
-                kwargs={
-                    'username': self.user.username,
-                    'post_id': post.pk}
-            ), data)
-        # Looking at group changes
-        post_edited = Post.objects.last()
-        post_count = Post.objects.all().count()
-        self.assertEqual(post, post_edited)
-        self.assertEqual(post_edited.text, text_edited)
-        self.assertEqual(post_edited.group, leo)
-        self.assertEqual(post_count, 1)
-
-    def urls(self):
-        """
-        Collects url of pages for testing
-        """
-        urls = [
-            reverse('index'),
-            reverse('profile', kwargs={'username': self.user.username}),
-            reverse('post_view', kwargs={'username': self.user.username, 'post_id': 1})]
-        return urls
-
-    def check_post_content(self, url, user, group, text, new_text):
-        """
-        Content of the post is checked
-        """
-        text = 'test_text'
-        text_edited = 'test_text_edit'
-        group = Group.objects.create(
-            title='test_group',
-            slug='test_group',
-            description='test_text')
-        response = self.authorized_client.get(url)
-        self.assertEqual(response.context[user], self.user)
-        self.assertEqual(response.context[group], group)
-        self.assertEqual(response.context[text], text)
-        self.assertEqual(response.context[new_text], text_edited)
-
-    def check_post_on_pages(self):
-        """
-        Test for changing a post on all pages.
-            """
-        text = 'test_text'
-        group = Group.objects.create(
-            title='test_group',
-            slug='test_group',
-            description='test_text')
-        text_edited = 'test_text_edit'
-        self.authorized_client.post(
-            reverse('new_post'),
-            data={'text': text, 'group': group.id},
-            follow=True
-        )
-        for url in (self.urls()):
-            with self.subTest(url=url):
-                self.check_post_content(url, self.user, group, text, text_edited)
-
-        # Проверки для работы заданий Спринта 6
-
     def test_image_upload(self):
+        text = 'test_text'
+        post = Post.objects.create(text=text, author=self.user)
         # Adding an image to the test post
-        response = self.authorized_client.post(f'/username/{self.post.id}/edit/',
-                                               {'text': self.post.text, 'image': self.image})
+        response = self.authorized_client.post(f'/username/{post.id}/edit/',
+                                               {'text': post.text, 'image': self.image})
 
         # The image loaded successfully.
-        self.assertRedirects(response, f'/username/{self.post.id}/')
+        self.assertRedirects(response, f'/username/{post.id}/')
 
         # We check the pages where the image has changed. This is the home page, profile and post
-        for url in ('/', '/username/', f'/username/{self.post.id}/'):
+        for url in ('/', '/username/', f'/username/{post.id}/'):
             response = self.client.get(url)
             self.assertContains(response,
                                 "<img",
                                 msg_prefix=f'Image display error in {url}')
 
     def test_protection_against_incorrect_image_shape(self):
+        text = 'test_text'
+        post = Post.objects.create(text=text, author=self.user)
         non_image_path = self.image
         error_message = f'Ошибка. Вы загрузили не изображение,' \
             f'или оно битое'
@@ -197,11 +100,75 @@ class TestPosts(TestCase):
                 'post_edit',
                 kwargs={
                     'username': self.user.username,
-                    'post_id': self.post.pk}),
+                    'post_id': post.pk}),
                 {'image': file_handler,
                  'text': 'Text and invalid file'}
             )
             self.assertFormError(response, 'form', 'image', error_message)
+
+
+class PostEditTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="testuser", password=12345)
+        self.authorized_client = Client()
+        self.unauthorized_client = Client()
+        self.authorized_client.force_login(self.user)
+
+    def test_new_post_pages(self):
+        """ After the post is published, a new entry appears on the main page of
+        the site (index), on the user's personal page (profile), and on
+         a separate page of the post (post)
+        """
+        text = 'test_text'
+        post = Post.objects.create(text=text, author=self.user)
+        response = self.client.get(reverse('index'))
+        self.assertContains(response, text, status_code=200)
+
+        response = self.client.get(reverse('profile', args=('testuser')))
+        self.assertContains(response, text, status_code=200)
+
+        response = self.client.get(reverse('post', args=('self.user.username', post.id)))
+        self.assertContains(response, text, status_code=200)
+
+
+def test_post_edit(self):
+    """An authorized user can edit their post, and then the content
+     of the post will change on all related pages."""
+    text = 'test_text'
+    post = Post.objects.create(text=text, author=self.user)
+    edit_post = 'This is new post for tests'
+    new_group_post = 'This is new group post'
+    group_post = Post.objects.create(
+        text='This is test post in group',
+        author=self.user, group=self.group)
+    self.authorized_client.post(reverse('post_edit', args=[self.user.username,
+                                                           post.id]),
+                                {'text': edit_post})
+    self.authorized_client.post(reverse('post_edit', args=[self.user.username,
+                                                           group_post.id]),
+                                {'text': new_group_post, 'group': self.group.id})
+    edited_post = Post.objects.get(id=post.id)
+    edited_group_post = Post.objects.get(id=group_post.id)
+    self.assertEqual(edit_post, edited_post.text, msg="Post hasn't changed")
+    self.assertEqual(new_group_post, edited_group_post.text,
+                     msg="Group post hasn't changed")
+    response = self.authorized_client.get(reverse('index'))
+    self.assertContains(response, edited_post)
+    self.assertContains(response, edited_group_post)
+    response = self.authorized_client.get(reverse('profile',
+                                                  args=[self.user.username]))
+    self.assertContains(response, edited_post)
+    self.assertContains(response, edited_group_post)
+    response = self.client.get(reverse('group_post',
+                                       args=[self.group.slug]))
+    self.assertContains(response, edited_group_post)
+    response = self.client.get(reverse('post', args=[self.user.username,
+                                                     self.post.id]))
+    response_group = self.client.get(reverse('post',
+                                             args=[self.user.username,
+                                                   self.group_post.id]))
+    self.assertContains(response, edited_post)
+    self.assertContains(response_group, edited_group_post)
 
 
 class PageCacheTest(TestCase):
@@ -239,32 +206,35 @@ class TestFollowerSystem(TestCase):
             username='Test_profile_for_the_subscription',
             password=12345)
         self.client.force_login(self.user)
-        text = 'test_text'
-        self.post = Post.objects.create(
-            text=text, author=self.user_to_follow)
 
     def test_following(self):
-        response = self.authorized_client.get(reverse('/Test_profile_for_the_subscription/follow'))
+        response = self.authorized_client.get(reverse('profile_follow', kwargs={'username': self.user.username}))
         self.assertTrue(
             Follow.objects.filter(user=self.authorized_client, author=self.user).exists(),
             "Follow object was not created")
 
     def test_the_user_is_subscribed_to_the_post_is_displayed(self):
-        response = self.authorized_client.get('/follow/')
+        text = 'test_text'
+        post = Post.objects.create(
+            text=text, author=self.user_to_follow)
+        response = self.authorized_client.get(reverse('profile_follow'))
         self.assertIn(
-            self.post, response.context['page'],
+            post, response.context['page'],
             "follower can not see their subscriptions on /follow/ page")
 
     def test_unfollowing(self):
-        self.authorized_client.get(reverse('/Test_profile_for_the_subscription/follow'))
-        response = self.authorized_client.get(reverse('/Test_profile_for_the_subscription/unfollow'))
+        text = 'test_text'
+        post = Post.objects.create(
+            text=text, author=self.user_to_follow)
+        self.authorized_client.get(reverse('profile_unfollow', kwargs={'username': self.user.username}))
+        response = self.authorized_client.get(reverse('profile_unfollow', kwargs={'username': self.user.username}))
         self.assertFalse(Follow.objects.filter(user=self.authorized_client, author=self.user).exists(),
                          "Follow object was not deleted")
 
         # test that author's posts do not appear on /follow/ for non-followers
-        response = self.authorized_client.get(reverse('/follow/'))
+        response = self.authorized_client.get(reverse('follow_index'))
         self.assertNotIn(
-            self.post, response.context['page'],
+            post, response.context['page'],
             "author not followed, but their post appears on /follow/")
 
 
@@ -276,36 +246,32 @@ class TestCommentSystem(TestCase):
         self.authorized_client = Client()
         self.unauthorized_client = Client()
         self.authorized_client.force_login(self.user)
-        text = 'test_text'
-        self.post = Post.objects.create(
-            text=text, author=self.user)
         self.comment_text = 'test_comment'
 
     def test_comments_authenticated(self):
         """ test that authenticated user can add comments """
-        response = self.authorized_client.post(f'/username/{self.post.id}/comment/',
-                                               {'text': 'Test checking how the comment works'})
+        text = 'test_text'
+        post = Post.objects.create(
+            text=text, author=self.user)
+        response = self.authorized_client.post(f'/username/{post.id}/comment/',
+                                               {'text': 'Test'})
         self.assertTrue(
-            Comment.objects.filter(post=self.post, author=self.authorized_client,
-                                   text='Test checking how the comment works').exists(),
+            Comment.objects.filter(post=post, author=self.authorized_client,
+                                   text='Test').exists(),
             'Comment object was not created')
-        go_to_post = self.authorized_client.post(reverse('/username/{self.post.id}/'))
-        self.assertRedirects(response, go_to_post,
-                             msg_prefix='user is not redirected to post page after commenting')
-        response = self.authorized_client.get(f'/username/{self.post.id}/')
-        self.assertEqual(response.context['comments'][0].text, 'Test checking how the comment works',
-                         'comment not displayed on post page')
+        go_to_post = self.authorized_client.post(reverse('post', kwargs={'username': self.user.username,
+                                                                         'post_id': post.id}))
+        self.assertRedirects(response, go_to_post)
+        response = self.authorized_client.get(f'/username/{post.id}/')
+        self.assertEqual(response.context['comments'][0].text, 'Test')
 
-    def test_comments_anonymous(self):
-        """ test that anonymous user cannot add comments """
-        response = self.unauthorized_client.post(f'/testuser/{self.post.id}/comment/',
-                                                 {'text': 'Test checking how the comment works'})
-        self.assertFalse(
-            Comment.objects.filter(post=self.post, text='Test checking how the comment works').exists(),
-            'Comment object was created')
-        go_to_post = self.authorized_client.post(reverse('/auth/login/?next=/testuser/{self.post.id}/comment/'))
-        self.assertRedirects(response, go_to_post,
-                             msg_prefix='anonymous user is not redirected to login page')
-        self.assertEqual(Comment.post.Comment, 0)
-
-#  Надеюсь что уже скоро закончу с тестами =)
+    def test_anon_user_commenting(self):
+        """test that anonymous user cannot add comments"""
+        text = 'test_text'
+        post = Post.objects.create(
+            text=text, author=self.user)
+        response = self.unauthorized_client.post(
+            reverse('add_comment', kwargs={'username': self.user.username,
+                                           'post_id': post.pk}),
+            {'text': self.comment_text}, follow=True)
+        self.assertNotContains(response, self.comment_text)
