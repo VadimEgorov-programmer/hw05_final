@@ -35,7 +35,7 @@ urlpatterns = [
     path('__debug__/', include(debug_toolbar.urls)),
 ]
 
-# добавим новые пути
+
 urlpatterns += [
     path('about-us/', views.flatpage, {'url': '/about-us/'}, name='about'),
     path('terms/', views.flatpage, {'url': '/terms/'}, name='terms'),

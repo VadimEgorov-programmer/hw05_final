@@ -101,8 +101,6 @@ def post_edit(request, username, post_id):
 
 
 def page_not_found(request, exception):
-    # Переменная exception содержит отладочную информацию,
-    # выводить её в шаблон пользователской страницы 404 мы не станем
     return render(
         request,
         "misc/404.html",
@@ -158,6 +156,6 @@ def profile_unfollow(request, username):
     author = get_object_or_404(User, username=username)
     follow_to_delete = Follow.objects.filter(user=request.user,
                                              author=author)
-    if follow_to_delete.exists():  # Круто, спасибо =)
+    if follow_to_delete.exists():
         follow_to_delete.delete()
     return redirect('profile', username=username)
