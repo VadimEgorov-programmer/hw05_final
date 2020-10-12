@@ -11,7 +11,7 @@
 
             <!-- Пост -->
 
-            {% include "includes/post_item.html" with post=post %}
+            {% include "includes/post_item.html" with add_comment=False post=post %}
 
             {% include 'includes/comments.html' with form=form items=comments %}
 </main>

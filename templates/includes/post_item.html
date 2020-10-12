@@ -30,9 +30,11 @@
                     Комментариев: {{ post.comments.count }}
                 </div>
                 {% endif %}
+                {% if add_comment %}
                 <a class="btn btn-sm btn-primary" href="{% url 'post' post.author.username post.id %}" role="button">
                     Добавить комментарий
                 </a>
+                {% endif %}
 
                 <!-- Ссылка на редактирование поста для автора -->
                 {% if user == post.author %}
