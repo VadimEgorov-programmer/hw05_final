@@ -62,7 +62,7 @@ def profile(request, username):
         following = Follow.objects.filter(user=request.user, author=user).exists()
     return render(request, 'profile.html', {
         'profile': user,
-        'Number_of_records': number_of_records,
+        'number_of_records': number_of_records,
         'page': page,
         'paginator': paginator,
         'post_list': user.posts.all(),
