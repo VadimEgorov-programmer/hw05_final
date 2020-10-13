@@ -2,7 +2,7 @@
 {% block title %}Последние обновления {% endblock %}
 
 {% block content %}
-<div class="container">
+<main role="main" class="container">
 
     {% include "includes/menu.html" with index=True %}
     {% load cache %}
@@ -17,6 +17,7 @@
             {% include "includes/paginator.html" with items=page paginator=paginator%}
         {% endif %}
 
-    </div>
+
     {% endcache %}
+</main>
 {% endblock %}

@@ -74,38 +74,43 @@ class TestPosts(TestCase):
         self.assertEqual(post_count, 0)
 
     def test_image_upload(self):
-        text = 'test_text'
-        post = Post.objects.create(text=text, author=self.user)
-        # Adding an image to the test post
-        response = self.authorized_client.post(f'/username/{post.id}/edit/',
-                                               {'text': post.text, 'image': self.image})
+        image = self._create_image()
+        post = Post.objects.create(
+            text="test_text",
+            author=self.user)
+        self.authorized_client.post(reverse('post_edit', args=[self.user.username, post.id]),
+                                    {"text": "post with image", "image": image})
+        response = self.authorized_client.get(reverse('post', args=[self.user.username, post.id]))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "<img", status_code=200)
+        cache.clear()
+        """
+        Столкнулся с тем что во время тестов из-за кэширования index страницы
+        тест страницы отваливается, чистим кэш и всё хорошо = )
+        """
+        response = self.client.get(reverse("index"))
+        self.assertContains(response, "<img", status_code=200)
+        response = self.authorized_client.get(reverse('profile', args=[self.user.username]))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "<img", status_code=200)
 
-        # The image loaded successfully.
-        self.assertRedirects(response, f'/username/{post.id}/')
 
-        # We check the pages where the image has changed. This is the home page, profile and post
-        for url in ('/', '/username/', f'/username/{post.id}/'):
-            response = self.client.get(url)
-            self.assertContains(response,
-                                "<img",
-                                msg_prefix=f'Image display error in {url}')
-
-    def test_protection_against_incorrect_image_shape(self):
-        text = 'test_text'
-        post = Post.objects.create(text=text, author=self.user)
-        non_image_path = self.image
-        error_message = f'Ошибка. Вы загрузили не изображение,' \
-            f'или оно битое'
-        with open(non_image_path, 'rb') as file_handler:
-            response = self.authorized_client.post(reverse(
-                'post_edit',
-                kwargs={
-                    'username': self.user.username,
-                    'post_id': post.pk}),
-                {'image': file_handler,
-                 'text': 'Text and invalid file'}
-            )
-            self.assertFormError(response, 'form', 'image', error_message)
+def test_protection_against_incorrect_image_shape(self):
+    text = 'test_text'
+    post = Post.objects.create(text=text, author=self.user)
+    non_image_path = self.image
+    error_message = f'Ошибка. Вы загрузили не изображение,' \
+        f'или оно битое'
+    with open(non_image_path, 'rb') as file_handler:
+        response = self.authorized_client.post(reverse(
+            'post_edit',
+            kwargs={
+                'username': self.user.username,
+                'post_id': post.pk}),
+            {'image': file_handler,
+             'text': 'Text and invalid file'}
+        )
+        self.assertFormError(response, 'form', 'image', error_message)
 
 
 class PostEditTest(TestCase):
