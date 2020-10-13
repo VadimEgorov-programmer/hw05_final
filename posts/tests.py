@@ -86,7 +86,8 @@ class TestPosts(TestCase):
         cache.clear()
         """
         Столкнулся с тем что во время тестов из-за кэширования index страницы
-        тест страницы отваливается, чистим кэш и всё хорошо = )
+        тест страницы отваливается, чистим кэш и всё хорошо = ) 
+        Буду иногда использовать очистку кэша.
         """
         response = self.client.get(reverse("index"))
         self.assertContains(response, "<img", status_code=200)
@@ -128,13 +129,14 @@ class PostEditTest(TestCase):
         """
         text = 'test_text'
         post = Post.objects.create(text=text, author=self.user)
-        response = self.client.get(reverse('index'))
+        cache.clear()
+        response = self.authorized_client.get(reverse('index'))
         self.assertContains(response, text, status_code=200)
 
-        response = self.client.get(reverse('profile', args=('testuser')))
+        response = self.authorized_client.get(reverse('profile', args=[self.user.username]))
         self.assertContains(response, text, status_code=200)
 
-        response = self.client.get(reverse('post', args=('self.user.username', post.id)))
+        response = self.authorized_client.get(reverse('post', args=('self.user.username', post.id)))
         self.assertContains(response, text, status_code=200)
 
     def test_post_edit(self):
