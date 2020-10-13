@@ -136,7 +136,7 @@ class PostEditTest(TestCase):
         response = self.authorized_client.get(reverse('profile', args=[self.user.username]))
         self.assertContains(response, text, status_code=200)
 
-        response = self.authorized_client.get(reverse('post', args=('self.user.username', post.id)))
+        response = self.authorized_client.get(reverse('post', args=(self.user.username, post.id)))
         self.assertContains(response, text, status_code=200)
 
     def test_post_edit(self):
