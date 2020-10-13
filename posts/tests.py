@@ -96,9 +96,10 @@ class TestPosts(TestCase):
 
 
 def test_protection_against_incorrect_image_shape(self):
+    image = self._create_image()
     text = 'test_text'
     post = Post.objects.create(text=text, author=self.user)
-    non_image_path = self.image
+    non_image_path = image
     error_message = f'Ошибка. Вы загрузили не изображение,' \
         f'или оно битое'
     with open(non_image_path, 'rb') as file_handler:
