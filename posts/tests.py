@@ -37,7 +37,7 @@ class TestPosts(TestCase):
 
     def test_profile(self):
         """ After registration, a user's personal page (profile) is created) """
-        response = self.authorized_client.get(reverse('/username/'))
+        response = self.authorized_client.get(reverse('profile', kwargs={'username': self.user.username}))
         self.assertEqual(response.status_code, 200)
         self.assertIsInstance(response.context['profile'], self.user.username)
         self.assertEqual(response.context['profile'].username, self.user.username)
