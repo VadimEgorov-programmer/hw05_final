@@ -142,24 +142,27 @@ class PostEditTest(TestCase):
     def test_post_edit(self):
         """An authorized user can edit their post, and then the content
         of the post will change on all related pages."""
+        group = Group.objects.create(title='Test Group', slug='testsslug',
+                                     description='Test group!')
         text = 'test_text'
         post = Post.objects.create(text=text, author=self.user)
         edit_post = 'This is new post for tests'
         new_group_post = 'This is new group post'
         group_post = Post.objects.create(
             text='This is test post in group',
-            author=self.user, group=self.group)
+            author=self.user, group=group)
         self.authorized_client.post(reverse('post_edit', args=[self.user.username,
                                                                post.id]),
                                     {'text': edit_post})
         self.authorized_client.post(reverse('post_edit', args=[self.user.username,
                                                                group_post.id]),
-                                    {'text': new_group_post, 'group': self.group.id})
+                                    {'text': new_group_post, 'group': group.id})
         edited_post = Post.objects.get(id=post.id)
         edited_group_post = Post.objects.get(id=group_post.id)
         self.assertEqual(edit_post, edited_post.text, msg="Post hasn't changed")
         self.assertEqual(new_group_post, edited_group_post.text,
                          msg="Group post hasn't changed")
+        cache.clear()
         response = self.authorized_client.get(reverse('index'))
         self.assertContains(response, edited_post)
         self.assertContains(response, edited_group_post)
@@ -168,13 +171,13 @@ class PostEditTest(TestCase):
         self.assertContains(response, edited_post)
         self.assertContains(response, edited_group_post)
         response = self.client.get(reverse('group_post',
-                                           args=[self.group.slug]))
+                                           args=[group.slug]))
         self.assertContains(response, edited_group_post)
         response = self.client.get(reverse('post', args=[self.user.username,
-                                                         self.post.id]))
+                                                         post.id]))
         response_group = self.client.get(reverse('post',
                                                  args=[self.user.username,
-                                                       self.group_post.id]))
+                                                       group_post.id]))
         self.assertContains(response, edited_post)
         self.assertContains(response_group, edited_group_post)
 
