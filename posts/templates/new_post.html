@@ -19,9 +19,8 @@
                         {% endfor %}
                     {% endif %}
 
-                    <form method="post" class="post-form" enctype="multipart/form-data">
-                        <!--  Если написать так, то тесты не могут найти "TestUser"  url 'post_edit' post.author.username post.post_id"-->
-                        <!-- Можно обойтись без action= ? Форма ведь данные отправляет на этот же адрес, а не на другой -->
+                    <form method="post" class="post-form" enctype="multipart/form-data"
+                          action="{% if post_id %} {% url 'post_edit' username post_id %} {% else %} {% url 'new_post' %} {% endif %}>
                         {% csrf_token %}
 
                         {% for field in form %}
