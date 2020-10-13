@@ -47,6 +47,7 @@ class TestPosts(TestCase):
         text = 'test_text'
         group = Group.objects.create(
             title='test_title', slug='test_slug', description='test_description')
+        post = Post.objects.create(text=text, author=self.user, group=group)
         response = self.authorized_client.post(reverse('new_post'), {'text': text, 'group': group})
         self.assertEqual(response.status_code, 200)
 
@@ -56,7 +57,7 @@ class TestPosts(TestCase):
         self.assertEqual(post.text, text)
         self.assertEqual(post.group, group)
         self.assertEqual(post.author.username, self.user.username)
-        self.assertEqual(post_count, 0)
+        self.assertEqual(post_count, 1)
 
     def test_for_an_unauthorized_redirect(self):
         """ An unauthorized visitor will not be able to publish a post (it redirects to the login page) """
