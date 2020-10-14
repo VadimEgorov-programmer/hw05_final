@@ -29,10 +29,9 @@ class TestPosts(TestCase):
         self.authorized_client = Client()
         self.unauthorized_client = Client()
         self.authorized_client.force_login(self.user)
-        self.image = self._create_image()
-        self.file = self._create_file()
 
     def tearDown(self):
+        self.image = self._create_image()
         self.image.close()
 
     def test_profile(self):
