@@ -83,16 +83,15 @@ class TestPosts(TestCase):
             author=self.user)
         self.authorized_client.post(reverse('post_edit', args=[self.user.username, post.id]),
                                     {"text": "post with image", "image": image})
-        response = self.authorized_client.get(reverse('post', args=[self.user.username, post.id]))
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "<img", status_code=200)
-        response = self.client.get(reverse("index"))
-        self.assertContains(response, "<img", status_code=200)
-        response = self.authorized_client.get(reverse('profile', args=[self.user.username]))
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "<img", status_code=200)
+        urls = [
+            reverse('post', args=[self.user.username, post.id]),
+            reverse("index"),
+            reverse('profile', args=[self.user.username])
+        ]
+        for url in urls:
+            response = self.client.get(url)
+            self.assertContains(response, "<img", status_code=200)
 
-    @override_settings(MEDIA_ROOT=tempfile.mkdtemp())
     def test_protection_against_incorrect_image_shape(self):
         file = self._create_file()
         text = 'test_text'
