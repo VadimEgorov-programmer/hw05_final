@@ -8,12 +8,6 @@ from PIL import Image
 import tempfile
 from django.core.files.uploadedfile import SimpleUploadedFile
 
-TEST_CACHE = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
-    }
-}
-
 
 class TestPosts(TestCase):
     def _create_image(self):
@@ -80,6 +74,8 @@ class TestPosts(TestCase):
         post_count = Post.objects.count()
         self.assertEqual(post_count, 0)
 
+    @override_settings(CACHES={
+        'default': {'BACKEND': 'django.core.cache.backends.dummy.DummyCache'}})
     def test_image_upload(self):
         image = self._create_image()
         post = Post.objects.create(
@@ -90,12 +86,6 @@ class TestPosts(TestCase):
         response = self.authorized_client.get(reverse('post', args=[self.user.username, post.id]))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "<img", status_code=200)
-        cache.clear()
-        """
-        Faced with the fact that during tests due to caching of the index page
-        the page test falls off, we clean the cache and everything is fine = )
-        I will sometimes use clearing the cache.
-        """
         response = self.client.get(reverse("index"))
         self.assertContains(response, "<img", status_code=200)
         response = self.authorized_client.get(reverse('profile', args=[self.user.username]))
