@@ -229,8 +229,6 @@ class TestFollowerSystem(TestCase):
             text=text, author=self.user_to_follow)
         self.authorized_client.get(reverse('profile_unfollow',
                                            kwargs={'username': self.user.username}))
-        response = self.authorized_client.get(reverse('profile_unfollow',
-                                                      kwargs={'username': self.user.username}))
         self.assertFalse(Follow.objects.filter(user=self.user_to_follow,
                                                author=self.user).exists(),
                          "Follow object was not deleted")
