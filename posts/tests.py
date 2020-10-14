@@ -260,7 +260,10 @@ class TestCommentSystem(TestCase):
             reverse('add_comment', kwargs={'username': self.user.username,
                                            'post_id': post.pk}),
             {'text': comment_text}, follow=True)
-        self.assertContains(response, comment_text)
+        commentt = Comment.objects.first()
+        commentt_count = Post.objects.count()
+        self.assertEqual(commentt_count, 1)
+        self.assertEqual(commentt.text, comment_text)
 
     def test_anon_user_commenting(self):
         """test that anonymous user cannot add comments"""
