@@ -102,7 +102,7 @@ def test_protection_against_incorrect_image_shape(self):
     post = Post.objects.create(text=text, author=self.user)
     non_image_path = image
     error_message = f'Ошибка. Вы загрузили не изображение,' \
-        f'или оно битое'
+                    f'или оно битое'
     with open(non_image_path, 'rb') as file_handler:
         response = self.authorized_client.post(reverse(
             'post_edit',
@@ -261,20 +261,15 @@ class TestCommentSystem(TestCase):
 
     def test_comments_authenticated(self):
         """ test that authenticated user can add comments """
+        comment_text = 'test_comment'
         text = 'test_text'
         post = Post.objects.create(
             text=text, author=self.user)
-        response = self.authorized_client.post(f'/username/{post.id}/comment/',
-                                               {'text': 'Test'})
-        self.assertTrue(
-            Comment.objects.filter(post=post, author=self.authorized_client,
-                                   text='Test').exists(),
-            'Comment object was not created')
-        go_to_post = self.authorized_client.post(reverse('post', kwargs={'username': self.user.username,
-                                                                         'post_id': post.id}))
-        self.assertRedirects(response, go_to_post)
-        response = self.authorized_client.get(f'/username/{post.id}/')
-        self.assertEqual(response.context['comments'][0].text, 'Test')
+        response = self.authorized_client.post(
+            reverse('add_comment', kwargs={'username': self.user.username,
+                                           'post_id': post.pk}),
+            {'text': comment_text}, follow=True)
+        self.assertContains(response, self.comment_text)
 
     def test_anon_user_commenting(self):
         """test that anonymous user cannot add comments"""
