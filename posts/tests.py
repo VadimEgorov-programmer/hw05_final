@@ -21,34 +21,39 @@ class TestPosts(TestCase):
         return open(f.name, mode='rb')
 
     def _create_file(self):
-        file = SimpleUploadedFile('filename.txt', b'hello world', 'text/plain')
+        file = SimpleUploadedFile('filename.txt', b'hello world',
+                                  'text/plain')
         return file
 
     def setUp(self):
-        self.user = User.objects.create_user(username="testuser", password=12345)
+        self.user = User.objects.create_user(username="testuser",
+                                             password=12345)
         self.authorized_client = Client()
         self.unauthorized_client = Client()
         self.authorized_client.force_login(self.user)
-        self.image = self._create_image()
-        self.file = self._create_file()
 
     def tearDown(self):
+        self.image = self._create_image()
         self.image.close()
 
     def test_profile(self):
         """ After registration, a user's personal page (profile) is created) """
-        response = self.authorized_client.get(reverse('profile', kwargs={'username': self.user.username}))
+        response = self.authorized_client.get(reverse('profile',
+                                                      kwargs={'username': self.user.username}))
         self.assertEqual(response.status_code, 200)
         self.assertIsInstance(response.context['profile'], User)
-        self.assertEqual(response.context['profile'].username, self.user.username)
+        self.assertEqual(response.context['profile'].username,
+                         self.user.username)
 
     def test_auth_user_post_creation(self):
         """ An authorized user can post a message (new) """
         text = 'test_text'
         group = Group.objects.create(
-            title='test_title', slug='test_slug', description='test_description')
+            title='test_title', slug='test_slug',
+            description='test_description')
         post = Post.objects.create(text=text, author=self.user, group=group)
-        response = self.authorized_client.post(reverse('new_post'), {'text': text, 'group': group})
+        response = self.authorized_client.post(reverse('new_post'),
+                                               {'text': text, 'group': group})
         self.assertEqual(response.status_code, 200)
 
         # Additionally check the post in the database
@@ -85,9 +90,9 @@ class TestPosts(TestCase):
         self.assertContains(response, "<img", status_code=200)
         cache.clear()
         """
-        Столкнулся с тем что во время тестов из-за кэширования index страницы
-        тест страницы отваливается, чистим кэш и всё хорошо = ) 
-        Буду иногда использовать очистку кэша.
+        Faced with the fact that during tests due to caching of the index page
+        the page test falls off, we clean the cache and everything is fine = )
+        I will sometimes use clearing the cache.
         """
         response = self.client.get(reverse("index"))
         self.assertContains(response, "<img", status_code=200)
@@ -101,8 +106,8 @@ def test_protection_against_incorrect_image_shape(self):
     text = 'test_text'
     post = Post.objects.create(text=text, author=self.user)
     non_image_path = image
-    error_message = f'Ошибка. Вы загрузили не изображение,' \
-        f'или оно битое'
+    error_message = f'Mistake. You didnt upload an image,' \
+                    f'or is it broken'
     with open(non_image_path, 'rb') as file_handler:
         response = self.authorized_client.post(reverse(
             'post_edit',
@@ -117,7 +122,8 @@ def test_protection_against_incorrect_image_shape(self):
 
 class PostEditTest(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user(username="testuser", password=12345)
+        self.user = User.objects.create_user(username="testuser",
+                                             password=12345)
         self.authorized_client = Client()
         self.unauthorized_client = Client()
         self.authorized_client.force_login(self.user)
@@ -151,15 +157,17 @@ class PostEditTest(TestCase):
         group_post = Post.objects.create(
             text='This is test post in group',
             author=self.user, group=group)
-        self.authorized_client.post(reverse('post_edit', args=[self.user.username,
-                                                               post.id]),
+        self.authorized_client.post(reverse('post_edit',
+                                            args=[self.user.username,
+                                                  post.id]),
                                     {'text': edit_post})
         self.authorized_client.post(reverse('post_edit', args=[self.user.username,
                                                                group_post.id]),
                                     {'text': new_group_post, 'group': group.id})
         edited_post = Post.objects.get(id=post.id)
         edited_group_post = Post.objects.get(id=group_post.id)
-        self.assertEqual(edit_post, edited_post.text, msg="Post hasn't changed")
+        self.assertEqual(edit_post, edited_post.text,
+                         msg="Post hasn't changed")
         self.assertEqual(new_group_post, edited_group_post.text,
                          msg="Group post hasn't changed")
         cache.clear()
@@ -186,7 +194,8 @@ class PageCacheTest(TestCase):
     """Cache test"""
 
     def setUp(self):
-        self.user = User.objects.create_user(username="testuser", password=12345)
+        self.user = User.objects.create_user(username="testuser",
+                                             password=12345)
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
 
@@ -209,7 +218,8 @@ class TestFollowerSystem(TestCase):
     """Test subscriptions and unsubscriptions, and pages for subscribers"""
 
     def setUp(self):
-        self.user = User.objects.create_user(username="testuser", password=12345)
+        self.user = User.objects.create_user(username="testuser",
+                                             password=12345)
         self.authorized_client = Client()
         self.unauthorized_client = Client()
         self.authorized_client.force_login(self.user)
@@ -228,7 +238,9 @@ class TestFollowerSystem(TestCase):
         text = 'test_text'
         post = Post.objects.create(
             text=text, author=self.user_to_follow)
-        response = self.authorized_client.get(reverse('profile_follow'))
+        self.authorized_client.get(reverse('profile_follow',
+                                           kwargs={'username': self.user_to_follow.username}))
+        response = self.authorized_client.get(reverse("follow_index"))
         self.assertIn(
             post, response.context['page'],
             "follower can not see their subscriptions on /follow/ page")
@@ -237,9 +249,12 @@ class TestFollowerSystem(TestCase):
         text = 'test_text'
         post = Post.objects.create(
             text=text, author=self.user_to_follow)
-        self.authorized_client.get(reverse('profile_unfollow', kwargs={'username': self.user.username}))
-        response = self.authorized_client.get(reverse('profile_unfollow', kwargs={'username': self.user.username}))
-        self.assertFalse(Follow.objects.filter(user=self.authorized_client, author=self.user).exists(),
+        self.authorized_client.get(reverse('profile_unfollow',
+                                           kwargs={'username': self.user.username}))
+        response = self.authorized_client.get(reverse('profile_unfollow',
+                                                      kwargs={'username': self.user.username}))
+        self.assertFalse(Follow.objects.filter(user=self.user_to_follow,
+                                               author=self.user).exists(),
                          "Follow object was not deleted")
 
         # test that author's posts do not appear on /follow/ for non-followers
@@ -253,36 +268,32 @@ class TestCommentSystem(TestCase):
     """Checking whether registered and unregistered users can comment on posts"""
 
     def setUp(self):
-        self.user = User.objects.create_user(username="testuser", password=12345)
+        self.user = User.objects.create_user(username="testuser",
+                                             password=12345)
         self.authorized_client = Client()
         self.unauthorized_client = Client()
         self.authorized_client.force_login(self.user)
-        self.comment_text = 'test_comment'
 
     def test_comments_authenticated(self):
         """ test that authenticated user can add comments """
+        comment_text = 'test_comment'
         text = 'test_text'
         post = Post.objects.create(
             text=text, author=self.user)
-        response = self.authorized_client.post(f'/username/{post.id}/comment/',
-                                               {'text': 'Test'})
-        self.assertTrue(
-            Comment.objects.filter(post=post, author=self.authorized_client,
-                                   text='Test').exists(),
-            'Comment object was not created')
-        go_to_post = self.authorized_client.post(reverse('post', kwargs={'username': self.user.username,
-                                                                         'post_id': post.id}))
-        self.assertRedirects(response, go_to_post)
-        response = self.authorized_client.get(f'/username/{post.id}/')
-        self.assertEqual(response.context['comments'][0].text, 'Test')
+        response = self.authorized_client.post(
+            reverse('add_comment', kwargs={'username': self.user.username,
+                                           'post_id': post.pk}),
+            {'text': comment_text}, follow=True)
+        self.assertContains(response, comment_text)
 
     def test_anon_user_commenting(self):
         """test that anonymous user cannot add comments"""
+        comment_text = 'test_comment'
         text = 'test_text'
         post = Post.objects.create(
             text=text, author=self.user)
         response = self.unauthorized_client.post(
             reverse('add_comment', kwargs={'username': self.user.username,
                                            'post_id': post.pk}),
-            {'text': self.comment_text}, follow=True)
-        self.assertNotContains(response, self.comment_text)
+            {'text': comment_text}, follow=True)
+        self.assertNotContains(response, comment_text)
