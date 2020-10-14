@@ -219,10 +219,10 @@ class TestFollowerSystem(TestCase):
         self.client.force_login(self.user)
 
     def test_following(self):
-        response = self.authorized_client.get(reverse('profile_follow', kwargs={'username': self.user.username}))
-        self.assertTrue(
-            Follow.objects.filter(user=self.authorized_client, author=self.user).exists(),
-            "Follow object was not created")
+        response = self.authorized_client.get(
+            reverse('profile_follow',
+                    kwargs={'username': self.user_to_follow.username}))
+        self.assertIsNotNone(Follow.objects.first())
 
     def test_the_user_is_subscribed_to_the_post_is_displayed(self):
         text = 'test_text'
