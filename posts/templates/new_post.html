@@ -20,7 +20,7 @@
                     {% endif %}
 
                     <form method="post" class="post-form" enctype="multipart/form-data"
-                          action="{% if post_id %} {% url 'post_edit' username post_id %} {% else %} {% url 'new_post' %} {% endif %}>
+                          action="{% if post_id %} {% url 'post_edit' username post_id %} {% else %} {% url 'new_post' %} {% endif %}">
                         {% csrf_token %}
 
                         {% for field in form %}
