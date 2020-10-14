@@ -21,11 +21,13 @@ class TestPosts(TestCase):
         return open(f.name, mode='rb')
 
     def _create_file(self):
-        file = SimpleUploadedFile('filename.txt', b'hello world', 'text/plain')
+        file = SimpleUploadedFile('filename.txt', b'hello world',
+                                  'text/plain')
         return file
 
     def setUp(self):
-        self.user = User.objects.create_user(username="testuser", password=12345)
+        self.user = User.objects.create_user(username="testuser",
+                                             password=12345)
         self.authorized_client = Client()
         self.unauthorized_client = Client()
         self.authorized_client.force_login(self.user)
@@ -36,18 +38,22 @@ class TestPosts(TestCase):
 
     def test_profile(self):
         """ After registration, a user's personal page (profile) is created) """
-        response = self.authorized_client.get(reverse('profile', kwargs={'username': self.user.username}))
+        response = self.authorized_client.get(reverse('profile',
+                                                      kwargs={'username': self.user.username}))
         self.assertEqual(response.status_code, 200)
         self.assertIsInstance(response.context['profile'], User)
-        self.assertEqual(response.context['profile'].username, self.user.username)
+        self.assertEqual(response.context['profile'].username,
+                         self.user.username)
 
     def test_auth_user_post_creation(self):
         """ An authorized user can post a message (new) """
         text = 'test_text'
         group = Group.objects.create(
-            title='test_title', slug='test_slug', description='test_description')
+            title='test_title', slug='test_slug',
+            description='test_description')
         post = Post.objects.create(text=text, author=self.user, group=group)
-        response = self.authorized_client.post(reverse('new_post'), {'text': text, 'group': group})
+        response = self.authorized_client.post(reverse('new_post'),
+                                               {'text': text, 'group': group})
         self.assertEqual(response.status_code, 200)
 
         # Additionally check the post in the database
@@ -116,7 +122,8 @@ def test_protection_against_incorrect_image_shape(self):
 
 class PostEditTest(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user(username="testuser", password=12345)
+        self.user = User.objects.create_user(username="testuser",
+                                             password=12345)
         self.authorized_client = Client()
         self.unauthorized_client = Client()
         self.authorized_client.force_login(self.user)
@@ -150,15 +157,17 @@ class PostEditTest(TestCase):
         group_post = Post.objects.create(
             text='This is test post in group',
             author=self.user, group=group)
-        self.authorized_client.post(reverse('post_edit', args=[self.user.username,
-                                                               post.id]),
+        self.authorized_client.post(reverse('post_edit',
+                                            args=[self.user.username,
+                                                  post.id]),
                                     {'text': edit_post})
         self.authorized_client.post(reverse('post_edit', args=[self.user.username,
                                                                group_post.id]),
                                     {'text': new_group_post, 'group': group.id})
         edited_post = Post.objects.get(id=post.id)
         edited_group_post = Post.objects.get(id=group_post.id)
-        self.assertEqual(edit_post, edited_post.text, msg="Post hasn't changed")
+        self.assertEqual(edit_post, edited_post.text,
+                         msg="Post hasn't changed")
         self.assertEqual(new_group_post, edited_group_post.text,
                          msg="Group post hasn't changed")
         cache.clear()
@@ -185,7 +194,8 @@ class PageCacheTest(TestCase):
     """Cache test"""
 
     def setUp(self):
-        self.user = User.objects.create_user(username="testuser", password=12345)
+        self.user = User.objects.create_user(username="testuser",
+                                             password=12345)
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
 
@@ -208,7 +218,8 @@ class TestFollowerSystem(TestCase):
     """Test subscriptions and unsubscriptions, and pages for subscribers"""
 
     def setUp(self):
-        self.user = User.objects.create_user(username="testuser", password=12345)
+        self.user = User.objects.create_user(username="testuser",
+                                             password=12345)
         self.authorized_client = Client()
         self.unauthorized_client = Client()
         self.authorized_client.force_login(self.user)
@@ -238,9 +249,12 @@ class TestFollowerSystem(TestCase):
         text = 'test_text'
         post = Post.objects.create(
             text=text, author=self.user_to_follow)
-        self.authorized_client.get(reverse('profile_unfollow', kwargs={'username': self.user.username}))
-        response = self.authorized_client.get(reverse('profile_unfollow', kwargs={'username': self.user.username}))
-        self.assertFalse(Follow.objects.filter(user=self.user_to_follow, author=self.user).exists(),
+        self.authorized_client.get(reverse('profile_unfollow',
+                                           kwargs={'username': self.user.username}))
+        response = self.authorized_client.get(reverse('profile_unfollow',
+                                                      kwargs={'username': self.user.username}))
+        self.assertFalse(Follow.objects.filter(user=self.user_to_follow,
+                                               author=self.user).exists(),
                          "Follow object was not deleted")
 
         # test that author's posts do not appear on /follow/ for non-followers
@@ -254,7 +268,8 @@ class TestCommentSystem(TestCase):
     """Checking whether registered and unregistered users can comment on posts"""
 
     def setUp(self):
-        self.user = User.objects.create_user(username="testuser", password=12345)
+        self.user = User.objects.create_user(username="testuser",
+                                             password=12345)
         self.authorized_client = Client()
         self.unauthorized_client = Client()
         self.authorized_client.force_login(self.user)
