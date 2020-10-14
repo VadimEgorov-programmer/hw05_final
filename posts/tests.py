@@ -8,6 +8,12 @@ from PIL import Image
 import tempfile
 from django.core.files.uploadedfile import SimpleUploadedFile
 
+TEST_CACHE = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+    }
+}
+
 
 class TestPosts(TestCase):
     def _create_image(self):
@@ -31,10 +37,6 @@ class TestPosts(TestCase):
         self.authorized_client = Client()
         self.unauthorized_client = Client()
         self.authorized_client.force_login(self.user)
-
-    def tearDown(self):
-        self.image = self._create_image()
-        self.image.close()
 
     def test_profile(self):
         """ After registration, a user's personal page (profile) is created) """
@@ -114,15 +116,6 @@ class TestPosts(TestCase):
              'text': post.text}
         )
         self.assertTrue(response.context['form'].has_error('image'))
-
-
-class PostEditTest(TestCase):
-    def setUp(self):
-        self.user = User.objects.create_user(username="testuser",
-                                             password=12345)
-        self.authorized_client = Client()
-        self.unauthorized_client = Client()
-        self.authorized_client.force_login(self.user)
 
     def test_new_post_pages(self):
         """ After the post is published, a new entry appears on the main page of
