@@ -100,24 +100,20 @@ class TestPosts(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "<img", status_code=200)
 
-
-def test_protection_against_incorrect_image_shape(self):
-    image = self._create_image()
-    text = 'test_text'
-    post = Post.objects.create(text=text, author=self.user)
-    non_image_path = image
-    error_message = f'Mistake. You didnt upload an image,' \
-                    f'or is it broken'
-    with open(non_image_path, 'rb') as file_handler:
+    @override_settings(MEDIA_ROOT=tempfile.mkdtemp())
+    def test_protection_against_incorrect_image_shape(self):
+        file = self._create_file()
+        text = 'test_text'
+        post = Post.objects.create(text=text, author=self.user)
         response = self.authorized_client.post(reverse(
             'post_edit',
             kwargs={
                 'username': self.user.username,
                 'post_id': post.pk}),
-            {'image': file_handler,
-             'text': 'Text and invalid file'}
+            {'image': file,
+             'text': post.text}
         )
-        self.assertFormError(response, 'form', 'image', error_message)
+        self.assertTrue(response.context['form'].has_error('image'))
 
 
 class PostEditTest(TestCase):
