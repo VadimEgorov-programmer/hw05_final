@@ -273,7 +273,6 @@ class TestCommentSystem(TestCase):
         self.authorized_client = Client()
         self.unauthorized_client = Client()
         self.authorized_client.force_login(self.user)
-        self.comment_text = 'test_comment'
 
     def test_comments_authenticated(self):
         """ test that authenticated user can add comments """
@@ -285,15 +284,16 @@ class TestCommentSystem(TestCase):
             reverse('add_comment', kwargs={'username': self.user.username,
                                            'post_id': post.pk}),
             {'text': comment_text}, follow=True)
-        self.assertContains(response, self.comment_text)
+        self.assertContains(response, comment_text)
 
     def test_anon_user_commenting(self):
         """test that anonymous user cannot add comments"""
+        comment_text = 'test_comment'
         text = 'test_text'
         post = Post.objects.create(
             text=text, author=self.user)
         response = self.unauthorized_client.post(
             reverse('add_comment', kwargs={'username': self.user.username,
                                            'post_id': post.pk}),
-            {'text': self.comment_text}, follow=True)
-        self.assertNotContains(response, self.comment_text)
+            {'text': comment_text}, follow=True)
+        self.assertNotContains(response, comment_text)
