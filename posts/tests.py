@@ -90,9 +90,9 @@ class TestPosts(TestCase):
         self.assertContains(response, "<img", status_code=200)
         cache.clear()
         """
-        Столкнулся с тем что во время тестов из-за кэширования index страницы
-        тест страницы отваливается, чистим кэш и всё хорошо = ) 
-        Буду иногда использовать очистку кэша.
+        Faced with the fact that during tests due to caching of the index page
+        the page test falls off, we clean the cache and everything is fine = )
+        I will sometimes use clearing the cache.
         """
         response = self.client.get(reverse("index"))
         self.assertContains(response, "<img", status_code=200)
@@ -106,8 +106,8 @@ def test_protection_against_incorrect_image_shape(self):
     text = 'test_text'
     post = Post.objects.create(text=text, author=self.user)
     non_image_path = image
-    error_message = f'Ошибка. Вы загрузили не изображение,' \
-                    f'или оно битое'
+    error_message = f'Mistake. You didnt upload an image,' \
+                    f'or is it broken'
     with open(non_image_path, 'rb') as file_handler:
         response = self.authorized_client.post(reverse(
             'post_edit',
