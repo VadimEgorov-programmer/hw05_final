@@ -56,9 +56,8 @@ def profile(request, username):
     paginator = Paginator(user.posts.all(), 10)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
-    following = None
-    if not request.user.is_anonymous:
-        following = Follow.objects.filter(user=request.user, author=user).exists()
+    following = request.user.is_anonymous or \
+                Follow.objects.filter(user=request.user, author=user).exists() #  79 длина строки
     return render(request, 'profile.html', {
         'profile': user,
         'page': page,
