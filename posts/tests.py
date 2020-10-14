@@ -228,7 +228,9 @@ class TestFollowerSystem(TestCase):
         text = 'test_text'
         post = Post.objects.create(
             text=text, author=self.user_to_follow)
-        response = self.authorized_client.get(reverse('profile_follow'))
+        self.authorized_client.get(reverse('profile_follow',
+                                           kwargs={'username': self.user_to_follow.username}))
+        response = self.authorized_client.get(reverse("follow_index"))
         self.assertIn(
             post, response.context['page'],
             "follower can not see their subscriptions on /follow/ page")
@@ -239,7 +241,7 @@ class TestFollowerSystem(TestCase):
             text=text, author=self.user_to_follow)
         self.authorized_client.get(reverse('profile_unfollow', kwargs={'username': self.user.username}))
         response = self.authorized_client.get(reverse('profile_unfollow', kwargs={'username': self.user.username}))
-        self.assertFalse(Follow.objects.filter(user=self.authorized_client, author=self.user).exists(),
+        self.assertFalse(Follow.objects.filter(user=self.user_to_follow, author=self.user).exists(),
                          "Follow object was not deleted")
 
         # test that author's posts do not appear on /follow/ for non-followers
