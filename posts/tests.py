@@ -172,7 +172,7 @@ class TestPosts(TestCase):
         """generalized method for checking posts"""
         response = self.authorized_client.get(url)
         # self.assertContains(response.context['page'], text)
-        self.assertContains(response, text, status_code=200)
+        self.assertContains(response, text, status_code=200) # проверка текста
 
 
 class PageCacheTest(TestCase):
