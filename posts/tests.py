@@ -10,15 +10,6 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 
 
 class TestPosts(TestCase):
-    def _create_image(self):
-        # create a test image to avoid accessing real files during testing
-        # https://dirtycoder.net/2016/02/09/testing-a-model-that-have-an-imagefield/
-
-        with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as f:
-            image = Image.new('RGB', (200, 200), 'white')
-            image.save(f, 'PNG')
-
-        return open(f.name, mode='rb')
 
     def setUp(self):
         self.user = User.objects.create_user(username="testuser",
@@ -72,7 +63,13 @@ class TestPosts(TestCase):
     @override_settings(CACHES={
         'default': {'BACKEND': 'django.core.cache.backends.dummy.DummyCache'}})
     def test_image_upload(self):
-        image = self._create_image()
+        # create a test image to avoid accessing real files during testing
+        # https://dirtycoder.net/2016/02/09/testing-a-model-that-have-an-imagefield/
+        with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as f:
+            image = Image.new('RGB', (200, 200), 'white')
+            image.save(f, 'PNG')
+
+        image = open(f.name, mode='rb')
         post = Post.objects.create(
             text="test_text",
             author=self.user)
