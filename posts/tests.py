@@ -18,7 +18,7 @@ class TestPosts(TestCase):
             image = Image.new('RGB', (200, 200), 'white')
             image.save(f, 'PNG')
 
-        return open(f.name, mode='rb')
+        return open(f.name, mode='rb') 
 
     def setUp(self):
         self.user = User.objects.create_user(username="testuser",
