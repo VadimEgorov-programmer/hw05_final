@@ -271,8 +271,8 @@ class TestCommentSystem(TestCase):
         text = 'test_text'
         post = Post.objects.create(
             text=text, author=self.user)
-        response = self.unauthorized_client.post(
-            reverse('add_comment', kwargs={'username': self.user.username,
+        self.unauthorized_client.post(
+            reverse('add_comment', kwargs={'username': 'test',
                                            'post_id': post.pk}),
-            {'text': comment_text}, follow=True)
-        self.assertNotContains(response, comment_text)
+            {'text': comment_text})
+        self.assertFalse(Comment.objects.filter(author=self.user, post=post, text=comment_text).exists())
