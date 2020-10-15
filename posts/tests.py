@@ -106,6 +106,8 @@ class TestPosts(TestCase):
         )
         self.assertTrue(response.context['form'].has_error('image'))
 
+    @override_settings(CACHES={
+        'default': {'BACKEND': 'django.core.cache.backends.dummy.DummyCache'}})
     def test_new_post_pages(self):
         """ After the post is published, a new entry appears on the main page of
         the site (index), on the user's personal page (profile), and on
@@ -113,7 +115,6 @@ class TestPosts(TestCase):
         """
         text = 'test_text'
         post = Post.objects.create(text=text, author=self.user)
-        cache.clear()
         response = self.authorized_client.get(reverse('index'))
         self.assertContains(response, text, status_code=200)
 
@@ -123,6 +124,8 @@ class TestPosts(TestCase):
         response = self.authorized_client.get(reverse('post', args=(self.user.username, post.id)))
         self.assertContains(response, text, status_code=200)
 
+    @override_settings(CACHES={
+        'default': {'BACKEND': 'django.core.cache.backends.dummy.DummyCache'}})
     def test_post_edit(self):
         """An authorized user can edit their post, and then the content
         of the post will change on all related pages."""
@@ -148,7 +151,6 @@ class TestPosts(TestCase):
                          msg="Post hasn't changed")
         self.assertEqual(new_group_post, edited_group_post.text,
                          msg="Group post hasn't changed")
-        cache.clear()
         response = self.authorized_client.get(reverse('index'))
         self.assertContains(response, edited_post)
         self.assertContains(response, edited_group_post)
