@@ -20,11 +20,6 @@ class TestPosts(TestCase):
 
         return open(f.name, mode='rb')
 
-    def _create_file(self):
-        file = SimpleUploadedFile('filename.txt', b'hello world',
-                                  'text/plain')
-        return file
-
     def setUp(self):
         self.user = User.objects.create_user(username="testuser",
                                              password=12345)
@@ -93,7 +88,8 @@ class TestPosts(TestCase):
             self.assertContains(response, "<img", status_code=200)
 
     def test_protection_against_incorrect_image_shape(self):
-        file = self._create_file()
+        file = SimpleUploadedFile('filename.txt', b'hello world',
+                                  'text/plain')
         text = 'test_text'
         post = Post.objects.create(text=text, author=self.user)
         response = self.authorized_client.post(reverse(
