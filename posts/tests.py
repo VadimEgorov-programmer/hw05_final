@@ -1,7 +1,7 @@
 from django.core.cache import cache
 from django.test import TestCase, override_settings, Client
 from django.urls import reverse
-from django.utils.html import escape
+
 
 from posts.models import User, Post, Group, Follow, Comment
 from PIL import Image
@@ -33,7 +33,7 @@ class TestPosts(TestCase):
         group = Group.objects.create(
             title='test_title', slug='test_slug',
             description='test_description')
-        post = Post.objects.create(text=text, author=self.user, group=group)
+        Post.objects.create(text=text, author=self.user, group=group)
         response = self.authorized_client.post(reverse('new_post'),
                                                {'text': text, 'group': group})
         self.assertEqual(response.status_code, 200)
@@ -106,73 +106,60 @@ class TestPosts(TestCase):
         the site (index), on the user's personal page (profile), and on
          a separate page of the post (post)
         """
-        self.text = 'test_text'
-        post = Post.objects.create(text=self.text, author=self.user)
+        group = Group.objects.create(title='Test Group', slug='testsslug',
+                                     description='Test group!')
+        text = 'test_text'
+        post = Post.objects.create(text=text, author=self.user, group=group)
         urls = [
             reverse('index'),
             reverse('profile', args=[self.user.username]),
             reverse('post', args=(self.user.username, post.id)),
+            reverse("group_post", args=[group.slug])
         ]
         for url in urls:
-            self.check_post_content(url, self.user)
-
-        # response = self.authorized_client.get(reverse('index'))
-
-        # response = self.authorized_client.get(reverse('profile', args=[self.user.username]))
-
-        # response = self.authorized_client.get(reverse('post', args=(self.user.username, post.id)))
+            self.check_post_content(url, post.text,
+                                    post.author, post.group)
 
     @override_settings(CACHES={
         'default': {'BACKEND': 'django.core.cache.backends.dummy.DummyCache'}})
     def test_post_edit(self):
         """An authorized user can edit their post, and then the content
         of the post will change on all related pages."""
-        group = Group.objects.create(title='Test Group', slug='testsslug',
-                                     description='Test group!')
-        text = 'test_text'
-        post = Post.objects.create(text=text, author=self.user)
-        edit_post = 'This is new post for tests'
-        new_group_post = 'This is new group post'
-        group_post = Post.objects.create(
-            text='This is test post in group',
-            author=self.user, group=group)
-        self.authorized_client.post(reverse('post_edit',
-                                            args=[self.user.username,
-                                                  post.id]),
-                                    {'text': edit_post})
-        self.authorized_client.post(reverse('post_edit', args=[self.user.username,
-                                                               group_post.id]),
-                                    {'text': new_group_post, 'group': group.id})
-        edited_post = Post.objects.get(id=post.id)
-        edited_group_post = Post.objects.get(id=group_post.id)
-        self.assertEqual(edit_post, edited_post.text,
-                         msg="Post hasn't changed")
-        self.assertEqual(new_group_post, edited_group_post.text,
-                         msg="Group post hasn't changed")
-        cache.clear()
-        response = self.authorized_client.get(reverse('index'))
-        self.assertContains(response, edited_post)
-        self.assertContains(response, edited_group_post)
-        response = self.authorized_client.get(reverse('profile',
-                                                      args=[self.user.username]))
-        self.assertContains(response, edited_post)
-        self.assertContains(response, edited_group_post)
-        response = self.client.get(reverse('group_post',
-                                           args=[group.slug]))
-        self.assertContains(response, edited_group_post)
-        response = self.client.get(reverse('post', args=[self.user.username,
-                                                         post.id]))
-        response_group = self.client.get(reverse('post',
-                                                 args=[self.user.username,
-                                                       group_post.id]))
-        self.assertContains(response, edited_post)
-        self.assertContains(response_group, edited_group_post)
+        group = Group.objects.create(title='Test Group', slug='testsslug')
+        post_text = 'Test post text'
+        post_new_text = 'New test post text'
+        post = Post.objects.create(
+            text=post_text, author=self.user, group=group)
 
-    def check_post_content(self, url, text):
+        new_group = Group.objects.create(title='TestGroup2', slug='TestGroup2')
+
+        response = self.authorized_client.post(reverse("post_edit", args=[self.user, post.id]), {
+            'text': post_new_text, 'group': new_group.id}, follow=True)
+        self.assertEqual(response.status_code, 200)
+
+        urls = [
+            reverse('profile', args=[self.user]),
+            reverse('index'),
+            reverse('post', args=[self.user, post.id]),
+            reverse("group_post", args=[new_group.slug])
+        ]
+
+        for url in urls:
+            self.check_post_content(url, post_new_text, self.user, new_group)
+
+    def check_post_content(self, url, text, post_author, post_group):
         """generalized method for checking posts"""
         response = self.authorized_client.get(url)
-        # self.assertContains(response.context['page'], text)
-        self.assertContains(response, text, status_code=200) # проверка текста
+        self.assertEqual(response.status_code, 200)
+        paginator = response.context.get('paginator')
+        if paginator is not None:
+            self.assertEqual(response.context['paginator'].count, 1)
+            post_on_page = response.context['page'][0]
+        else:
+            post_on_page = response.context['post']
+        self.assertEqual(post_on_page.text, text)
+        self.assertEqual(post_on_page.author, post_author)
+        self.assertEqual(post_on_page.group, post_group)
 
 
 class PageCacheTest(TestCase):
@@ -224,7 +211,7 @@ class TestFollowerSystem(TestCase):
         self.authorized_client.get(
             reverse('profile_follow',
                     kwargs={'username': self.user_to_follow.username}))
-        follow = Follow.objects.first()
+        Follow.objects.first()
         follow_count = Follow.objects.count()
         self.assertEqual(follow_count, 1)
         self.assertEqual(post.text, text)
@@ -273,7 +260,7 @@ class TestCommentSystem(TestCase):
         text = 'test_text'
         post = Post.objects.create(
             text=text, author=self.user)
-        response = self.authorized_client.post(
+        self.authorized_client.post(
             reverse('add_comment', kwargs={'username': self.user.username,
                                            'post_id': post.pk}),
             {'text': comment_text}, follow=True)
