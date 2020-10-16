@@ -97,7 +97,8 @@ class TestPosts(TestCase):
             {'image': file,
              'text': post.text}
         )
-        self.assertFormError(response, 'form', 'image', errors='Вы загрузили не изображение = (')
+        self.assertFormError(response, 'form', 'image', errors='Вы загрузили не изображение = ( /'
+                                                               ' You didnt upload an image = (')
 
     @override_settings(CACHES={
         'default': {'BACKEND': 'django.core.cache.backends.dummy.DummyCache'}})
