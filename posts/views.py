@@ -27,7 +27,7 @@ def group_posts(request, slug):
     из базы данных или возвращает сообщение об ошибке, если объект не найден.
     '''
     group = get_object_or_404(Group, slug=slug)
-    post_list = Post.objects.filter(group=group).all()
+    post_list = group.posts_group.filter(group=group).all()
     paginator = Paginator(post_list, 10)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
@@ -43,7 +43,7 @@ def group_posts(request, slug):
 def new_post(request):
     form = PostForm(request.POST or None, files=request.FILES or None)
     if form.is_valid():
-        post = form.save(commit=False) 
+        post = form.save(commit=False)
         post.author = request.user
         post.save()
         return redirect('index')
@@ -56,7 +56,7 @@ def profile(request, username):
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
     following = request.user.is_anonymous or \
-                Follow.objects.filter(user=request.user, author=user).exists() #  79 длина строки
+                Follow.objects.filter(user=request.user, author=user).exists()  # 79 длина строки
     return render(request, 'profile.html', {
         'profile': user,
         'page': page,
