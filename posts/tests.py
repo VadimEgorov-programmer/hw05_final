@@ -50,8 +50,10 @@ class TestPosts(TestCase):
         """ An unauthorized visitor will not be able to publish a post (it redirects to the login page) """
         response = self.unauthorized_client.get(reverse('new_post'))
         self.assertRedirects(response=response,
-                             expected_url='/auth/login/?next=/new/',
+                             expected_url=f"{reverse('login')}?next={reverse('new_post')}",
                              target_status_code=200)
+        post_count = Post.objects.count()
+        self.assertEqual(post_count, 0)
 
     def test_anon_post_creation_post_request(self):
         """ Attempt to create a post without registration """
@@ -64,7 +66,6 @@ class TestPosts(TestCase):
         'default': {'BACKEND': 'django.core.cache.backends.dummy.DummyCache'}})
     def test_image_upload(self):
         # create a test image to avoid accessing real files during testing
-        # https://dirtycoder.net/2016/02/09/testing-a-model-that-have-an-imagefield/
         with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as f:
             image = Image.new('RGB', (200, 200), 'white')
             image.save(f, 'PNG')
