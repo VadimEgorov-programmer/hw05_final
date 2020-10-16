@@ -201,20 +201,11 @@ class TestFollowerSystem(TestCase):
         self.client.force_login(self.user)
 
     def test_following(self):
-        text = 'test_text'
-        group = Group.objects.create(
-            title='test_title', slug='test_slug',
-            description='test_description')
-        post = Post.objects.create(text=text, author=self.user, group=group)
-        self.authorized_client.post(reverse('new_post'),
-                                    {'text': text, 'group': group})
         self.authorized_client.get(
             reverse('profile_follow',
                     kwargs={'username': self.user_to_follow.username}))
-        Follow.objects.first()
         follow_count = Follow.objects.count()
         self.assertEqual(follow_count, 1)
-        self.assertEqual(post.text, text)
 
     def test_the_user_is_subscribed_to_the_post_is_displayed(self):
         text = 'test_text'
