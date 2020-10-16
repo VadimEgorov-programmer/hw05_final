@@ -224,7 +224,7 @@ class TestFollowerSystem(TestCase):
             reverse('profile_follow',
                     kwargs={'username': self.user_to_follow.username}))
         self.authorized_client.get(reverse('profile_unfollow',
-                                           kwargs={'username': self.user.username}))
+                                           kwargs={'username': self.user_to_follow.username}))
         self.assertFalse(Follow.objects.filter(user=self.user_to_follow,
                                                author=self.user).exists(),
                          "Follow object was not deleted")
@@ -260,7 +260,7 @@ class TestCommentSystem(TestCase):
                                            'post_id': post.pk}),
             {'text': comment_text}, follow=True)
         commentt = Comment.objects.first()
-        commentt_count = Post.objects.count()
+        commentt_count = Comment.objects.count()
         self.assertEqual(commentt_count, 1)
         self.assertEqual(commentt.text, comment_text)
 
