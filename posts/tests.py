@@ -273,4 +273,5 @@ class TestCommentSystem(TestCase):
             reverse('add_comment', kwargs={'username': 'test',
                                            'post_id': post.pk}),
             {'text': comment_text})
-        self.assertFalse(Comment.objects.filter(author=self.user, post=post, text=comment_text).exists())
+        comment_count = Comment.objects.count()
+        self.assertEqual(comment_count, 0)
