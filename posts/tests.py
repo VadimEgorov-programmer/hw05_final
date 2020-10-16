@@ -2,7 +2,6 @@ from django.core.cache import cache
 from django.test import TestCase, override_settings, Client
 from django.urls import reverse
 
-
 from posts.models import User, Post, Group, Follow, Comment
 from PIL import Image
 import tempfile
@@ -98,7 +97,7 @@ class TestPosts(TestCase):
             {'image': file,
              'text': post.text}
         )
-        self.assertTrue(response.context['form'].has_error('image'))
+        self.assertFormError(response, 'form', 'image', errors='Вы загрузили не изображение = (')
 
     @override_settings(CACHES={
         'default': {'BACKEND': 'django.core.cache.backends.dummy.DummyCache'}})
