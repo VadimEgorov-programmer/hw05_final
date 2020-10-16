@@ -27,7 +27,7 @@ def group_posts(request, slug):
     из базы данных или возвращает сообщение об ошибке, если объект не найден.
     '''
     group = get_object_or_404(Group, slug=slug)
-    post_list = group.posts_group.filter(group=group).all()
+    post_list = group.posts_group.all()
     paginator = Paginator(post_list, 10)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
