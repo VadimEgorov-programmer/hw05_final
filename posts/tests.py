@@ -219,6 +219,9 @@ class TestFollowerSystem(TestCase):
             "follower can not see their subscriptions on /follow/ page")
 
     def test_unfollowing(self):
+        self.authorized_client.get(
+            reverse('profile_follow',
+                    kwargs={'username': self.user_to_follow.username}))
         self.authorized_client.get(reverse('profile_unfollow',
                                            kwargs={'username': self.user.username}))
         self.assertFalse(Follow.objects.filter(user=self.user_to_follow,
