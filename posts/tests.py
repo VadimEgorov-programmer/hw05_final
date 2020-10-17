@@ -256,6 +256,7 @@ class TestCommentSystem(TestCase):
         commentt_count = Comment.objects.count()
         self.assertEqual(commentt_count, 1)
         self.assertEqual(commentt.text, comment_text)
+        self.assertEqual(commentt.author.username, self.user.username)
 
     def test_anon_user_commenting(self):
         """test that anonymous user cannot add comments"""
