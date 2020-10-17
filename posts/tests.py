@@ -16,6 +16,8 @@ class TestPosts(TestCase):
         self.authorized_client = Client()
         self.unauthorized_client = Client()
         self.authorized_client.force_login(self.user)
+        self.group = Group.objects.create(title='test_title', slug='test_slug',
+                                     description='test_description')
 
     def test_profile(self):
         """ After registration, a user's personal page (profile) is created) """
@@ -29,16 +31,13 @@ class TestPosts(TestCase):
     def test_auth_user_post_creation(self):
         """ An authorized user can post a message (new) """
         text = 'test_text'
-        group = Group.objects.create(
-            title='test_title', slug='test_slug',
-            description='test_description')
-        Post.objects.create(text=text, author=self.user, group=group)
+        Post.objects.create(text=text, author=self.user, group=self.group)
 
         # Additionally check the post in the database
         post = Post.objects.first()
         post_count = Post.objects.count()
         self.assertEqual(post.text, text)
-        self.assertEqual(post.group, group)
+        self.assertEqual(post.group, self.group)
         self.assertEqual(post.author.username, self.user.username)
         self.assertEqual(post_count, 1)
 
@@ -104,15 +103,13 @@ class TestPosts(TestCase):
         the site (index), on the user's personal page (profile), and on
          a separate page of the post (post)
         """
-        group = Group.objects.create(title='Test Group', slug='testsslug',
-                                     description='Test group!')
         text = 'test_text'
-        post = Post.objects.create(text=text, author=self.user, group=group)
+        post = Post.objects.create(text=text, author=self.user, group=self.group)
         urls = [
             reverse('index'),
             reverse('profile', args=[self.user.username]),
             reverse('post', args=(self.user.username, post.id)),
-            reverse("group_post", args=[group.slug])
+            reverse("group_post", args=[self.group.slug])
         ]
         for url in urls:
             self.check_post_content(url, post.text,
@@ -123,11 +120,10 @@ class TestPosts(TestCase):
     def test_post_edit(self):
         """An authorized user can edit their post, and then the content
         of the post will change on all related pages."""
-        group = Group.objects.create(title='Test Group', slug='testsslug')
         post_text = 'Test post text'
         post_new_text = 'New test post text'
         post = Post.objects.create(
-            text=post_text, author=self.user, group=group)
+            text=post_text, author=self.user, group=self.group)
 
         new_group = Group.objects.create(title='TestGroup2', slug='TestGroup2')
 
