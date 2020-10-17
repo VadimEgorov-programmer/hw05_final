@@ -33,9 +33,6 @@ class TestPosts(TestCase):
             title='test_title', slug='test_slug',
             description='test_description')
         Post.objects.create(text=text, author=self.user, group=group)
-        response = self.authorized_client.post(reverse('new_post'),
-                                               {'text': text, 'group': group})
-        self.assertEqual(response.status_code, 200)
 
         # Additionally check the post in the database
         post = Post.objects.first()
