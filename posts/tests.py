@@ -43,7 +43,7 @@ class TestPosts(TestCase):
 
     def test_for_an_unauthorized_redirect(self):
         """ An unauthorized visitor will not be able to publish a post (it redirects to the login page) """
-        response = self.unauthorized_client.get(reverse('new_post'))
+        response = self.unauthorized_client.post(reverse('new_post'))
         self.assertRedirects(response=response,
                              expected_url=f"{reverse('login')}?next={reverse('new_post')}",
                              target_status_code=200)
