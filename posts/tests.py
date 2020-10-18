@@ -17,7 +17,7 @@ class TestPosts(TestCase):
         self.unauthorized_client = Client()
         self.authorized_client.force_login(self.user)
         self.group = Group.objects.create(title='test_title', slug='test_slug',
-                                     description='test_description')
+                                          description='test_description')
 
     def test_profile(self):
         """ After registration, a user's personal page (profile) is created) """
@@ -31,7 +31,7 @@ class TestPosts(TestCase):
     def test_auth_user_post_creation(self):
         """ An authorized user can post a message (new) """
         text = 'test_text'
-        Post.objects.create(text=text, author=self.user, group=self.group)
+        self.authorized_client.post(reverse("new_post"), {'group': self.group.id, 'text': text})
 
         # Additionally check the post in the database
         post = Post.objects.first()
@@ -47,13 +47,6 @@ class TestPosts(TestCase):
         self.assertRedirects(response=response,
                              expected_url=f"{reverse('login')}?next={reverse('new_post')}",
                              target_status_code=200)
-        post_count = Post.objects.count()
-        self.assertEqual(post_count, 0)
-
-    def test_anon_post_creation_post_request(self):
-        """ Attempt to create a post without registration """
-        text = 'test_text'
-        self.unauthorized_client.post(reverse('new_post'), {'text': text})
         post_count = Post.objects.count()
         self.assertEqual(post_count, 0)
 
