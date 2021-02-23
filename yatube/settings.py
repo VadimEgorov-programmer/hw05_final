@@ -25,15 +25,17 @@ SECRET_KEY = 's4pce=@p8n55g61e2134f12hayt*ij0#43y9+_=txrzcp_q6_65dasf4s1ffasdfgq
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    "localhost",
-    "127.0.0.1",
-    "[::1]",
-    "testserver",
+    "*",
+    # "localhost",
+    # "127.0.0.1",
+    # "[::1]",
+    # "testserver",
 ]
 
 # Application definition
 
 INSTALLED_APPS = [
+    "django.contrib.staticfiles",
     'posts',
     'users',
     'django.contrib.sites',
@@ -43,15 +45,14 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
 
-    'debug_toolbar',
+    "debug_toolbar",
     'sorl.thumbnail',
 
 ]
 
 MIDDLEWARE = [
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
 
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -150,8 +151,8 @@ EMAIL_FILE_PATH = os.path.join(BASE_DIR, "sent_emails")
 SITE_ID = 1
 
 INTERNAL_IPS = [
-    'localhost'
-    '127.0.0.1',
+    # 'localhost'
+    "127.0.0.1",
     # ...
 ]
 
